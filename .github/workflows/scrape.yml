@@ -1,11 +1,10 @@
-name: Telegram Scraper
+name: Update Telegram Feed
 
 on:
   schedule:
-    - cron: '0 */4 * * *' 
+    - cron: '0 */6 * * *'
   workflow_dispatch:
 
-# أضف هذا القسم للسماح للبوت بالكتابة في المستودع
 permissions:
   contents: write
 
@@ -13,20 +12,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v3
-        with:
-          # ضروري لاستخدام الـ Token الافتراضي بصلاحيات الكتابة
-          persist-credentials: true
-
-      - name: Setup Python
+      - uses: actions/checkout@v3
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-
-      - name: Install Dependencies
+      - name: Install Telethon
         run: pip install telethon
-
       - name: Run Scraper
         env:
           API_ID: ${{ secrets.API_ID }}
@@ -34,9 +26,8 @@ jobs:
           SESSION_STRING: ${{ secrets.SESSION_STRING }}
           CHANNELS_LIST: ${{ secrets.CHANNELS_LIST }}
         run: python scraper.py
-
-      - name: Commit and Push Changes
+      - name: Deploy to GitHub Pages
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "Auto-update Posts (Text & Links)"
+          commit_message: "Update feed data"
           file_pattern: "data.json"
