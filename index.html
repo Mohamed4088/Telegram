@@ -33,62 +33,27 @@
 </div>
 
 <script>
-    let allPosts = [];
+    // 1. طلب كلمة السر فور فتح الصفحة
+    const password = prompt("هذه الصفحة خاصة، يرجى إدخال كلمة السر:");
+    const SECRET_KEY = "Doka"
 
-    // جلب البيانات من ملف JSON
-    fetch('data.json')
-        .then(response => response.json())
-        .then(data => {
-            allPosts = data;
-            populateFilters(data);
-            renderPosts(data);
-        });
+    if (password !== SECRET_KEY) {
+        document.body.innerHTML = "<h1 style='text-align:center; margin-top:50px;'>عذراً، غير مسموح لك بالدخول.</h1>";
+    } else {
+        // 2. إذا كانت كلمة السر صحيحة، يبدأ جلب البيانات
+        let allPosts = [];
 
-    // استخراج أسماء القنوات لملء قائمة الفلتر
-    function populateFilters(posts) {
-        const channels = [...new Set(posts.map(p => p.channel_name))];
-        const select = document.getElementById('channelFilter');
-        channels.forEach(ch => {
-            select.innerHTML += `<option value="${ch}">${ch}</option>`;
-        });
+        fetch('data.json')
+            .then(response => response.json())
+            .then(data => {
+                allPosts = data;
+                populateFilters(data);
+                renderPosts(data);
+            })
+            .catch(err => console.error('Error:', err));
     }
 
-    // رسم الكروت في الصفحة
-    function renderPosts(posts) {
-        const container = document.getElementById('postsContainer');
-        container.innerHTML = '';
-        posts.forEach(post => {
-            const dateStr = new Date(post.date).toLocaleString('ar-EG', { dateStyle: 'medium', timeStyle: 'short' });
-            container.innerHTML += `
-                <div class="post-card">
-                    <div class="channel-name">
-                        <span>📢 ${post.channel_name}</span>
-                        <span class="post-date">${dateStr}</span>
-                    </div>
-                    <div class="post-text">${post.text}</div>
-                    <a href="${post.link}" target="_blank" class="btn-telegram">عرض في تليجرام ↗</a>
-                </div>
-            `;
-        });
-    }
-
-    // منطق البحث والفلترة
-    function filterData() {
-        const searchText = document.getElementById('searchInput').value.toLowerCase();
-        const selectedChannel = document.getElementById('channelFilter').value;
-
-        const filtered = allPosts.filter(post => {
-            const matchText = post.text.toLowerCase().includes(searchText);
-            const matchChannel = selectedChannel === 'all' || post.channel_name === selectedChannel;
-            return matchText && matchChannel;
-        });
-
-        renderPosts(filtered);
-    }
-
-    // تفعيل الفلاتر عند الكتابة أو التغيير
-    document.getElementById('searchInput').addEventListener('input', filterData);
-    document.getElementById('channelFilter').addEventListener('change', filterData);
+    // باقي الدوال (populateFilters, renderPosts, filterData) تظل كما هي تحت هذا الجزء
 </script>
 
 </body>
