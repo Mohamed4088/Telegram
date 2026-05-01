@@ -5,36 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>📡 راديو القنوات | متقدم</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: { cairo: ['Cairo', 'sans-serif'] },
+                    fontFamily: {
+                        sans: ['Roboto', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Helvetica', 'Arial', 'sans-serif'],
+                    },
                 }
             }
         }
     </script>
     <style>
-        body { font-family: 'Cairo', sans-serif; }
+        body { 
+            font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; 
+            letter-spacing: 0.2px;
+        }
         .glass { backdrop-filter: blur(10px); background: rgba(255,255,255,0.8); }
         .dark .glass { background: rgba(30,30,30,0.8); }
+        .post-text { font-size: 15px; } /* حجم خط مشابه لتليجرام */
         .post-text.clamped { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
-        .highlight { background: #fef08a; padding: 1px 3px; border-radius: 3px; }
+        .highlight { background: #fef08a; padding: 1px 3px; border-radius: 3px; color: #000; }
         .dark .highlight { background: #854d0e; color: #fef3c7; }
         .fade-in { animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .type-badge { font-size: 0.7rem; padding: 2px 8px; border-radius: 9999px; font-weight: 700; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
+        
+        /* تنسيق الروابط داخل البوست */
+        .post-link {
+            color: #3b82f6;
+            text-decoration: none;
+            word-break: break-all;
+            transition: all 0.2s;
+        }
+        .post-link:hover { text-decoration: underline; color: #2563eb; }
+        .dark .post-link { color: #60a5fa; }
+        .dark .post-link:hover { color: #93c5fd; }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-gray-950 text-slate-800 dark:text-gray-200 transition-colors duration-300 min-h-screen">
 
 <div class="max-w-4xl mx-auto p-4 md:p-6">
 
-    <!-- ===== Header ===== -->
     <header class="text-center mb-6">
         <div class="inline-flex items-center gap-2 bg-gradient-to-l from-blue-600 to-cyan-500 text-white px-6 py-3 rounded-2xl shadow-lg mb-3">
             <span class="text-2xl">📡</span>
@@ -46,7 +62,6 @@
         </button>
     </header>
 
-    <!-- ===== Stats Cards ===== -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6" id="statsGrid">
         <div class="glass rounded-2xl p-4 text-center shadow-sm border border-slate-100 dark:border-gray-800">
             <div class="text-2xl font-black text-blue-600" id="statTotal">-</div>
@@ -66,9 +81,7 @@
         </div>
     </div>
 
-    <!-- ===== Search & Filters ===== -->
     <div class="glass rounded-2xl p-4 mb-4 shadow-sm border border-slate-100 dark:border-gray-800">
-        <!-- Search Row -->
         <div class="flex gap-2 mb-3">
             <div class="flex-1 relative">
                 <input type="text" id="searchInput" placeholder="🔍 ابحث في كل البوستات..."
@@ -80,7 +93,6 @@
             </button>
         </div>
 
-        <!-- Filters Row -->
         <div class="flex flex-wrap gap-2">
             <select id="channelFilter" class="flex-1 min-w-[140px] p-2.5 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm outline-none">
                 <option value="all">📁 كل القنوات</option>
@@ -105,7 +117,6 @@
             <input type="date" id="toDate" class="p-2.5 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm outline-none" title="إلى تاريخ">
         </div>
 
-        <!-- Active Filters -->
         <div id="activeFilters" class="flex flex-wrap gap-2 mt-3 hidden">
             <span class="text-xs text-slate-500">الفلاتر النشطة:</span>
             <div id="filterTags"></div>
@@ -113,23 +124,19 @@
         </div>
     </div>
 
-    <!-- ===== Hashtags Cloud ===== -->
     <div id="hashtagsCloud" class="glass rounded-2xl p-3 mb-4 shadow-sm border border-slate-100 dark:border-gray-800 hidden">
         <div class="text-xs text-slate-500 mb-2 font-bold"># هاشتاقات شائعة</div>
         <div id="hashtagsList" class="flex flex-wrap gap-2"></div>
     </div>
 
-    <!-- ===== Posts Feed ===== -->
     <div id="feed" class="space-y-4"></div>
 
-    <!-- ===== Empty State ===== -->
     <div id="emptyState" class="text-center py-16 hidden">
         <div class="text-5xl mb-4">🔍</div>
         <h3 class="text-lg font-bold text-slate-500">مفيش نتائج</h3>
         <p class="text-sm text-slate-400">جرب تغيّر كلمات البحث أو الفلاتر</p>
     </div>
 
-    <!-- ===== Load More ===== -->
     <div class="text-center mt-8 space-y-2">
         <button id="loadMoreBtn" class="bg-gradient-to-l from-blue-600 to-cyan-500 text-white px-10 py-3 rounded-2xl font-bold hover:shadow-lg hover:scale-105 transition-all hidden" onclick="renderNextPage()">
             تحميل المزيد ⬇️
@@ -137,7 +144,6 @@
         <div id="progressInfo" class="text-xs text-slate-400"></div>
     </div>
 
-    <!-- ===== Footer ===== -->
     <footer class="text-center mt-10 mb-4 text-xs text-slate-400">
         <p>⚡ يتم التحديث تلقائياً كل 6 ساعات عبر GitHub Actions</p>
     </footer>
@@ -349,12 +355,19 @@
             const dateStr = date.toLocaleString('ar-EG');
             const typeInfo = TYPE_CONFIG[post.type] || TYPE_CONFIG.text;
 
-            // Highlight search term
             let displayText = escapeHtml(post.text);
+
+            // تحويل الروابط إلى Hyperlinks (يتم تطبيقها أولاً)
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            displayText = displayText.replace(urlRegex, url => `<a href="${url}" target="_blank" class="post-link" dir="ltr" rel="noopener noreferrer">${url}</a>`);
+
+            // تظليل النص المبحوث عنه مع تجاهل محتوى وسوم HTML لعدم كسر الروابط
             if (searchTerm) {
-                const regex = new RegExp(`(${escapeRegex(searchTerm)})`, 'gi');
+                const regex = new RegExp(`(${escapeRegex(searchTerm)})(?![^<]*>|[^<>]*<\/a>)`, 'gi');
                 displayText = displayText.replace(regex, '<span class="highlight">$1</span>');
             }
+            
+            // تحويل الأسطر الجديدة لـ HTML
             displayText = displayText.replace(/\n/g, '<br>');
 
             const postId = `post-${currentIndex + i}`;
@@ -363,7 +376,6 @@
             card.className = 'fade-in';
             card.innerHTML = `
                 <div class="glass rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800 overflow-hidden hover:shadow-md transition-all">
-                    <!-- Post Header -->
                     <div class="flex justify-between items-center px-5 pt-4 pb-2">
                         <div class="flex items-center gap-2">
                             <span class="text-lg">📢</span>
@@ -374,15 +386,13 @@
                         <div class="text-xs text-slate-400" title="${dateStr}">${timeAgo}</div>
                     </div>
 
-                    <!-- Post Body -->
                     <div class="px-5 pb-2">
-                        <div id="${postId}" class="post-text clamped text-sm leading-relaxed text-slate-700 dark:text-gray-300">
+                        <div id="${postId}" class="post-text clamped leading-relaxed text-slate-700 dark:text-gray-300">
                             ${displayText}
                         </div>
                         <button onclick="toggleExpand('${postId}', this)" class="text-xs text-blue-500 font-bold mt-1 hover:underline expand-btn">عرض المزيد ↓</button>
                     </div>
 
-                    <!-- Post Footer -->
                     <div class="flex justify-between items-center px-5 py-3 bg-slate-50 dark:bg-gray-900/50 text-xs text-slate-400">
                         <div class="flex gap-4">
                             ${post.views ? `<span>👁️ ${formatNum(post.views)}</span>` : ''}
