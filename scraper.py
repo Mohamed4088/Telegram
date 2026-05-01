@@ -17,36 +17,47 @@ async def main():
     print("[+] تم الاتصال بنجاح!")
     
     posts = []
-    channels = [ch.strip() for ch in CHANNELS_LIST.split(',') if ch.strip()]
-    print(f"[*] القنوات التي تم قراءتها من الـ Secret: {channels}")
+    
+    # 1. تنظيف قائمة القنوات المستهدفة (تحويلها لمعرفات نظيفة)
+    raw_channels = [ch.strip() for ch in CHANNELS_LIST.split(',') if ch.strip()]
+    target_identifiers = []
+    for ch in raw_channels:
+        clean_ch = ch.replace('https://t.me/', '').replace('@', '').replace('joinchat/', '').strip().lower()
+        target_identifiers.append(clean_ch)
+        
+    print(f"[*] المعرفات المستهدفة: {len(target_identifiers)} قناة")
 
-    if not channels:
-        print("[!] خطأ: الـ Secret الخاص بالقنوات فارغ أو لم يتم قراءته بشكل صحيح.")
+    # 2. سحب قائمة القنوات التي أنت مشترك فيها (لتخطي حظر البحث)
+    print("[*] جاري جلب محادثاتك الحالية (لتجنب حظر تليجرام)...")
+    dialogs = await client.get_dialogs()
+    
+    target_entities = []
+    for dialog in dialogs:
+        if dialog.is_channel or dialog.is_group:
+            entity = dialog.entity
+            username = getattr(entity, 'username', None)
+            channel_id_str = str(entity.id).replace('-100', '')
+            
+            # فلترة القنوات لتطابق القائمة الخاصة بك
+            if (username and username.lower() in target_identifiers) or \
+               (channel_id_str in target_identifiers):
+                target_entities.append(entity)
+
+    if not target_entities:
+        print("[!] لم يتم العثور على أي قناة مطابقة داخل اشتراكاتك.")
         sys.exit(1)
 
-    for channel_input in channels:
+    print(f"[+] تم العثور على {len(target_entities)} قناة جاهزة للسحب.")
+
+    # 3. سحب البوستات
+    for entity in target_entities:
+        channel_title = entity.title if hasattr(entity, 'title') else "Private Channel"
         try:
             print(f"----------------------------------------")
-            print(f"[*] محاولة سحب البيانات من: {channel_input}")
-            
-            # معالجة الروابط لو المستخدم حط لينك كامل بدل الـ Username
-            target = channel_input
-            if "t.me/" in target:
-                parts = target.split("t.me/")[1].split("/")
-                if not target.startswith("+") and "joinchat" not in target:
-                    target = parts[0]
-            
-            # تحويل الأرقام (IDs) إلى Integer لأن Telethon يطلبها هكذا للقنوات الخاصة
-            try:
-                target = int(target)
-            except ValueError:
-                pass
-
-            entity = await client.get_entity(target)
-            channel_title = entity.title if hasattr(entity, 'title') else str(target)
+            print(f"[*] سحب البيانات من: {channel_title}")
             
             count = 0
-            async for message in client.iter_messages(entity, limit=30):
+            async for message in client.iter_messages(entity, limit=20): # قللنا العدد لـ 20 لتخفيف الضغط
                 if getattr(entity, 'username', None):
                     post_link = f"https://t.me/{entity.username}/{message.id}"
                 else:
@@ -64,8 +75,11 @@ async def main():
             
             print(f"[+] تم سحب {count} بوست من {channel_title}")
             
+            # หน่วงเวลา 2 ثانية بين كل قناة وأخرى لعدم إثارة أنظمة تليجرام
+            await asyncio.sleep(2) 
+            
         except Exception as e:
-            print(f"[!] فشل السحب من {channel_input} - السبب: {e}")
+            print(f"[!] فشل السحب من {channel_title} - السبب: {e}")
 
     posts.sort(key=lambda x: x['date'], reverse=True)
 
@@ -74,12 +88,11 @@ async def main():
     
     await client.disconnect()
 
-    # لو القائمة فاضية بعد كل ده، ارمي خطأ عشان الـ Action يقف ونشوف الـ Logs
     if not posts:
-        print("\n[!!!] خطأ حرج: لم يتم سحب أي بوست من أي قناة. تأكد من الروابط أو صلاحية الجلسة.")
+        print("\n[!!!] خطأ حرج: لم يتم سحب أي بوست.")
         sys.exit(1)
     else:
-        print(f"\n[=] تمت العملية بنجاح! إجمالي البوستات المسحوبة: {len(posts)}")
+        print(f"\n[=] تمت العملية بنجاح! إجمالي البوستات: {len(posts)}")
 
 if __name__ == '__main__':
     asyncio.run(main())
