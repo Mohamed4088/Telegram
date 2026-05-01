@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مجمع القنوات</title>
+    <style>
+        :root { --primary: #0088cc; --bg: #f4f6f8; --card: #ffffff; --text: #333333; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; }
+        .controls { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        input, select { padding: 12px; border: 1px solid #ccc; border-radius: 8px; flex: 1; min-width: 200px; font-size: 16px; }
+        .post-card { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.2s; border-right: 4px solid var(--primary); }
+        .post-card:hover { transform: translateY(-2px); }
+        .channel-name { font-weight: bold; color: var(--primary); margin-bottom: 8px; display: flex; justify-content: space-between; }
+        .post-date { font-size: 0.85em; color: #888; font-weight: normal; }
+        .post-text { line-height: 1.6; margin-bottom: 15px; white-space: pre-wrap; word-wrap: break-word; }
+        .btn-telegram { display: inline-block; background: var(--primary); color: #fff; padding: 8px 16px; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: bold; }
+        .btn-telegram:hover { background: #0077b5; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="controls">
+        <input type="text" id="searchInput" placeholder="ابحث في البوستات...">
+        <select id="channelFilter">
+            <option value="all">كل القنوات</option>
+        </select>
+    </div>
+
+    <div id="postsContainer"></div>
+</div>
+
+<script>
+    let allPosts = [];
+
+    // جلب البيانات من ملف JSON
+    fetch('data.json')
+        .then(response => response.json())
+        .then(data => {
+            allPosts = data;
+            populateFilters(data);
+            renderPosts(data);
+        });
+
+    // استخراج أسماء القنوات لملء قائمة الفلتر
+    function populateFilters(posts) {
+        const channels = [...new Set(posts.map(p => p.channel_name))];
+        const select = document.getElementById('channelFilter');
+        channels.forEach(ch => {
+            select.innerHTML += `<option value="${ch}">${ch}</option>`;
+        });
+    }
+
+    // رسم الكروت في الصفحة
+    function renderPosts(posts) {
+        const container = document.getElementById('postsContainer');
+        container.innerHTML = '';
+        posts.forEach(post => {
+            const dateStr = new Date(post.date).toLocaleString('ar-EG', { dateStyle: 'medium', timeStyle: 'short' });
+            container.innerHTML += `
+                <div class="post-card">
+                    <div class="channel-name">
+                        <span>📢 ${post.channel_name}</span>
+                        <span class="post-date">${dateStr}</span>
+                    </div>
+                    <div class="post-text">${post.text}</div>
+                    <a href="${post.link}" target="_blank" class="btn-telegram">عرض في تليجرام ↗</a>
+                </div>
+            `;
+        });
+    }
+
+    // منطق البحث والفلترة
+    function filterData() {
+        const searchText = document.getElementById('searchInput').value.toLowerCase();
+        const selectedChannel = document.getElementById('channelFilter').value;
+
+        const filtered = allPosts.filter(post => {
+            const matchText = post.text.toLowerCase().includes(searchText);
+            const matchChannel = selectedChannel === 'all' || post.channel_name === selectedChannel;
+            return matchText && matchChannel;
+        });
+
+        renderPosts(filtered);
+    }
+
+    // تفعيل الفلاتر عند الكتابة أو التغيير
+    document.getElementById('searchInput').addEventListener('input', filterData);
+    document.getElementById('channelFilter').addEventListener('change', filterData);
+</script>
+
+</body>
+</html>
