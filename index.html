@@ -3,94 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>متابعة قنوات التليجرام</title>
+    <title>متابعة القنوات | سريع</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Cairo', sans-serif; background-color: #f1f5f9; }</style>
 </head>
 <body class="p-4 md:p-8">
-    <div class="max-w-4xl mx-auto">
-        <header class="mb-8 text-center">
-            <h1 class="text-3xl font-bold text-slate-800 mb-2">بوستات التليجرام</h1>
+    <div class="max-w-3xl mx-auto">
+        <header class="mb-6 text-center">
+            <h1 class="text-2xl font-bold text-slate-800">راديو القنوات ⚡</h1>
         </header>
 
-        <div class="flex flex-col md:flex-row gap-4 mb-8">
-            <input type="text" id="searchInput" placeholder="ابحث في البوستات..." 
-                class="flex-1 p-3 rounded-xl border border-slate-200 shadow-sm outline-none focus:ring-2 focus:ring-blue-500">
-            <select id="channelFilter" 
-                class="p-3 rounded-xl border border-slate-200 shadow-sm outline-none bg-white min-w-[200px]">
+        <div class="grid grid-cols-2 gap-3 mb-6">
+            <input type="text" id="searchInput" placeholder="بحث..." class="p-3 rounded-xl border border-slate-200 shadow-sm outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+            <select id="channelFilter" class="p-3 rounded-xl border border-slate-200 bg-white text-sm outline-none">
                 <option value="all">كل القنوات</option>
             </select>
         </div>
 
-        <div id="feed" class="grid gap-6"></div>
+        <div id="feed" class="space-y-4"></div>
+
+        <div class="text-center mt-8">
+            <button id="loadMoreBtn" class="bg-slate-800 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-600 transition-all hidden">تحميل المزيد</button>
+        </div>
     </div>
 
     <script>
         let allPosts = [];
+        let filteredPosts = [];
+        let currentIndex = 0;
+        const pageSize = 10;
 
-        async function loadFeed() {
-            try {
-                const response = await fetch('data.json');
-                allPosts = await response.json();
-                
-                const channels = [...new Set(allPosts.map(p => p.channel))];
-                const select = document.getElementById('channelFilter');
-                channels.forEach(ch => {
-                    const opt = document.createElement('option');
-                    opt.value = ch;
-                    opt.textContent = ch;
-                    select.appendChild(opt);
-                });
+        async function init() {
+            const res = await fetch('data.json');
+            allPosts = await res.json();
+            
+            // تعبئة الفلتر
+            const channels = [...new Set(allPosts.map(p => p.channel))];
+            channels.forEach(ch => {
+                const opt = new Option(ch, ch);
+                document.getElementById('channelFilter').add(opt);
+            });
 
-                renderPosts(allPosts);
-            } catch (e) {
-                document.getElementById('feed').innerHTML = '<p class="text-center text-red-500">لم يتم العثور على بيانات. قم بتشغيل السكريبت من Actions أولاً.</p>';
-            }
+            applyFilters();
         }
 
-        function renderPosts(posts) {
-            const container = document.getElementById('feed');
-            container.innerHTML = '';
+        function applyFilters() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const channel = document.getElementById('channelFilter').value;
             
-            posts.forEach(post => {
-                const date = new Date(post.date).toLocaleString('ar-EG', { hour12: true });
-                const formattedText = post.text.replace(/\n/g, '<br>');
-                
+            filteredPosts = allPosts.filter(p => 
+                (channel === 'all' || p.channel === channel) && 
+                (p.text.toLowerCase().includes(search))
+            );
+            
+            currentIndex = 0;
+            document.getElementById('feed').innerHTML = '';
+            renderNextPage();
+        }
+
+        function renderNextPage() {
+            const container = document.getElementById('feed');
+            const nextBatch = filteredPosts.slice(currentIndex, currentIndex + pageSize);
+            
+            nextBatch.forEach(post => {
+                const date = new Date(post.date).toLocaleString('ar-EG');
                 container.innerHTML += `
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all">
-                        <div class="flex justify-between items-start mb-4">
-                            <span class="text-blue-600 font-bold text-sm bg-blue-50 px-3 py-1 rounded-lg">${post.channel}</span>
-                            <span class="text-slate-400 text-xs">${date}</span>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                        <div class="flex justify-between items-center mb-3 text-xs">
+                            <span class="text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded-md">${post.channel}</span>
+                            <span class="text-slate-400">${date}</span>
                         </div>
-                        <div class="text-slate-700 leading-relaxed mb-6 text-sm md:text-base">${formattedText}</div>
-                        <a href="${post.link}" target="_blank" 
-                            class="inline-block text-center text-white bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-lg text-sm font-semibold transition-colors">
-                            عرض البوست في تليجرام
-                        </a>
+                        <p class="text-slate-700 text-sm leading-relaxed mb-4 line-clamp-5">${post.text.replace(/\n/g, '<br>')}</p>
+                        <a href="${post.link}" target="_blank" class="text-blue-500 font-bold text-sm hover:underline">فتح في تليجرام ←</a>
                     </div>
                 `;
             });
+
+            currentIndex += pageSize;
+            document.getElementById('loadMoreBtn').classList.toggle('hidden', currentIndex >= filteredPosts.length);
         }
 
-        function updateUI() {
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            const filter = document.getElementById('channelFilter').value;
-            
-            const filtered = allPosts.filter(p => {
-                const matchesSearch = p.text.toLowerCase().includes(search);
-                const matchesChannel = filter === 'all' || p.channel === filter;
-                return matchesSearch && matchesChannel;
-            });
-            renderPosts(filtered);
-        }
+        document.getElementById('loadMoreBtn').addEventListener('click', renderNextPage);
+        document.getElementById('searchInput').addEventListener('input', applyFilters);
+        document.getElementById('channelFilter').addEventListener('change', applyFilters);
 
-        document.getElementById('searchInput').addEventListener('input', updateUI);
-        document.getElementById('channelFilter').addEventListener('change', updateUI);
-
-        loadFeed();
+        init();
     </script>
 </body>
 </html>
