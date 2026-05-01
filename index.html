@@ -3,195 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>أرشيف القنوات</title>
+    <title>متابعة قنوات التليجرام</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg: #f0f2f5; --card: #ffffff; --text: #1c1e21; --primary: #0088cc; --border: #ddd;
-        }
-        body.dark {
-            --bg: #18191a; --card: #242526; --text: #e4e6eb; --primary: #3996fb; --border: #333;
-        }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; transition: 0.3s; }
-        .container { max-width: 900px; margin: 0 auto; }
-        
-        .toolbar { 
-            background: var(--card); padding: 15px; border-radius: 10px; margin-bottom: 20px;
-            display: flex; gap: 10px; flex-wrap: wrap; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid var(--border);
-        }
-        input, select, button { padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; flex: 1; min-width: 150px;}
-        button { background: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold; flex: 0.5; }
-        button:hover { opacity: 0.9; }
-
-        #posts-list { display: flex; flex-direction: column; gap: 15px; }
-        .post-card { 
-            background: var(--card); padding: 20px; border-radius: 10px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-right: 4px solid var(--primary); border: 1px solid var(--border); border-right-width: 4px;
-        }
-        .post-header { font-size: 13px; color: #888; margin-bottom: 12px; display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 8px;}
-        .channel-name { font-weight: bold; color: var(--text); }
-        .post-content { line-height: 1.6; white-space: pre-wrap; word-break: break-word; font-size: 15px;}
-        
-        /* تنسيقات الروابط المستخرجة من الماركداون */
-        .post-content a { color: var(--primary); text-decoration: none; font-weight: 500; }
-        .post-content a:hover { text-decoration: underline; }
-        .hashtag { color: var(--primary); cursor: pointer; }
-
-        .img-container { margin-top: 15px; border-radius: 8px; overflow: hidden; display: none; }
-        .img-container.active { display: block; }
-        img { width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px;}
-
-        .action-links { margin-top: 15px; display: flex; gap: 15px; font-size: 14px;}
-        .action-links a { color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 5px; font-weight: bold;}
-
-        .pagination { display: flex; justify-content: center; align-items: center; gap: 20px; margin-top: 30px; }
-        #page-num { font-weight: bold; }
+        body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; }
     </style>
 </head>
-<body>
+<body class="p-4 md:p-8">
+    <div class="max-w-4xl mx-auto">
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-slate-800 mb-2">بوستات التليجرام</h1>
+        </header>
 
-<div class="container">
-    <div class="toolbar">
-        <input type="text" id="search" placeholder="بحث في النصوص...">
-        <select id="filter">
-            <option value="all">الكل</option>
-            <option value="links">يحتوي على روابط</option>
-            <option value="hashtags">يحتوي على هاشتاج</option>
-        </select>
-        <button id="theme-toggle">الوضع الداكن 🌙</button>
+        <div class="flex flex-col md:flex-row gap-4 mb-8">
+            <input type="text" id="searchInput" placeholder="ابحث في البوستات..." 
+                class="flex-1 p-3 rounded-xl border border-slate-200 shadow-sm outline-none focus:ring-2 focus:ring-blue-500">
+            <select id="channelFilter" 
+                class="p-3 rounded-xl border border-slate-200 shadow-sm outline-none bg-white min-w-[200px]">
+                <option value="all">كل القنوات</option>
+            </select>
+        </div>
+
+        <div id="feed" class="grid gap-6"></div>
     </div>
 
-    <div id="posts-list"></div>
+    <script>
+        let allPosts = [];
 
-    <div class="pagination">
-        <button id="prev">السابق</button>
-        <span id="page-num">الصفحة 1</span>
-        <button id="next">التالي</button>
-    </div>
-</div>
+        async function loadFeed() {
+            try {
+                const response = await fetch('data.json');
+                allPosts = await response.json();
+                
+                const channels = [...new Set(allPosts.map(p => p.channel))];
+                const select = document.getElementById('channelFilter');
+                channels.forEach(ch => {
+                    const opt = document.createElement('option');
+                    opt.value = ch;
+                    opt.textContent = ch;
+                    select.appendChild(opt);
+                });
 
-<script>
-    // ضع هنا التوكن الخاص بـ GitHub إذا كان المستودع Private (أو اتركه فارغاً إذا كنت تختبر محلياً)
-    const GITHUB_TOKEN = ''; 
-    const JSON_URL = 'data.json'; 
-
-    let allData = [];
-    let filteredData = [];
-    let currentPage = 1;
-    const limit = 100;
-
-    // دالة لتحويل الـ Markdown إلى HTML
-    function parseMarkdown(text) {
-        if (!text) return "";
-        
-        // 1. تحويل الروابط: [text](url) -> <a href="url">text</a>
-        let html = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
-        
-        // 2. تحويل الروابط المباشرة (التي لا تحتوي على صيغة ماركداون)
-        html = html.replace(/(?<!href=")(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
-        
-        // 3. تحويل الخط المائل أو العريض: __text__ -> <i>text</i> أو <b>text</b>
-        html = html.replace(/__([^_]+)__/g, '<i>$1</i>');
-        html = html.replace(/\*\*([^\*]+)\*\*/g, '<b>$1</b>');
-        
-        // 4. تلوين الهاشتاجات (اختياري)
-        html = html.replace(/(#[a-zA-Z0-9_а-яА-Я]+)/g, '<span class="hashtag">$1</span>');
-
-        return html;
-    }
-
-    // دالة تنسيق التاريخ
-    function formatDate(dateString) {
-        if (!dateString) return '';
-        const date = new Date(dateString);
-        return date.toLocaleString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-    }
-
-    async function fetchData() {
-        try {
-            const headers = GITHUB_TOKEN ? { 'Authorization': `token ${GITHUB_TOKEN}` } : {};
-            const response = await fetch(JSON_URL, { headers });
-            allData = await response.json();
-            filteredData = allData;
-            render();
-        } catch (e) {
-            document.getElementById('posts-list').innerHTML = "<div style='text-align:center; padding:20px;'>حدث خطأ في تحميل ملف البيانات. تأكد من مسار data.json</div>";
+                renderPosts(allPosts);
+            } catch (e) {
+                document.getElementById('feed').innerHTML = '<p class="text-center text-red-500">لم يتم العثور على بيانات. قم بتشغيل السكريبت من Actions أولاً.</p>';
+            }
         }
-    }
 
-    function render() {
-        const list = document.getElementById('posts-list');
-        list.innerHTML = '';
-        
-        const start = (currentPage - 1) * limit;
-        const pageItems = filteredData.slice(start, start + limit);
-
-        pageItems.forEach(item => {
-            const card = document.createElement('div');
-            card.className = 'post-card';
+        function renderPosts(posts) {
+            const container = document.getElementById('feed');
+            container.innerHTML = '';
             
-            // معالجة النص بالماركداون
-            const formattedText = parseMarkdown(item.text);
-
-            card.innerHTML = `
-                <div class="post-header">
-                    <span class="channel-name">📺 ${item.channel || 'قناة غير معروفة'}</span>
-                    <span>🕒 ${formatDate(item.date)}</span>
-                </div>
+            posts.forEach(post => {
+                const date = new Date(post.date).toLocaleString('ar-EG', { hour12: true });
+                const formattedText = post.text.replace(/\n/g, '<br>');
                 
-                <div class="post-content">${formattedText}</div>
-                
-                <div class="img-container ${item.photo ? 'active' : ''}">
-                    <img src="${item.photo || ''}" loading="lazy">
-                </div>
-                
-                <div class="action-links">
-                    <a href="${item.link}" target="_blank">🔗 فتح في تيليجرام</a>
-                </div>
-            `;
-            list.appendChild(card);
-        });
-
-        // تحديث أزرار التنقل
-        const totalPages = Math.ceil(filteredData.length / limit) || 1;
-        document.getElementById('page-num').innerText = `الصفحة ${currentPage} من ${totalPages}`;
-        document.getElementById('prev').disabled = currentPage === 1;
-        document.getElementById('next').disabled = currentPage >= totalPages;
-    }
-
-    // البحث
-    document.getElementById('search').oninput = (e) => {
-        const term = e.target.value.toLowerCase();
-        filteredData = allData.filter(item => (item.text || "").toLowerCase().includes(term));
-        currentPage = 1;
-        render();
-    };
-
-    // الفلترة
-    document.getElementById('filter').onchange = (e) => {
-        const val = e.target.value;
-        if (val === 'links') {
-            filteredData = allData.filter(i => (i.text || "").includes('http') || (i.link));
-        } else if (val === 'hashtags') {
-            filteredData = allData.filter(i => (i.text || "").includes('#'));
-        } else {
-            filteredData = allData;
+                container.innerHTML += `
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="text-blue-600 font-bold text-sm bg-blue-50 px-3 py-1 rounded-lg">${post.channel}</span>
+                            <span class="text-slate-400 text-xs">${date}</span>
+                        </div>
+                        <div class="text-slate-700 leading-relaxed mb-6 text-sm md:text-base">${formattedText}</div>
+                        <a href="${post.link}" target="_blank" 
+                            class="inline-block text-center text-white bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-lg text-sm font-semibold transition-colors">
+                            عرض البوست في تليجرام
+                        </a>
+                    </div>
+                `;
+            });
         }
-        currentPage = 1;
-        render();
-    };
 
-    // الوضع الداكن
-    document.getElementById('theme-toggle').onclick = (e) => {
-        document.body.classList.toggle('dark');
-        e.target.innerText = document.body.classList.contains('dark') ? "الوضع الفاتح ☀️" : "الوضع الداكن 🌙";
-    };
+        function updateUI() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const filter = document.getElementById('channelFilter').value;
+            
+            const filtered = allPosts.filter(p => {
+                const matchesSearch = p.text.toLowerCase().includes(search);
+                const matchesChannel = filter === 'all' || p.channel === filter;
+                return matchesSearch && matchesChannel;
+            });
+            renderPosts(filtered);
+        }
 
-    // التنقل بين الصفحات
-    document.getElementById('next').onclick = () => { currentPage++; render(); window.scrollTo(0,0); };
-    document.getElementById('prev').onclick = () => { currentPage--; render(); window.scrollTo(0,0); };
+        document.getElementById('searchInput').addEventListener('input', updateUI);
+        document.getElementById('channelFilter').addEventListener('change', updateUI);
 
-    // بدء التشغيل
-    fetchData();
-</script>
+        loadFeed();
+    </script>
 </body>
 </html>
