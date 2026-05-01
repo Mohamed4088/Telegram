@@ -3,86 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>أرشيف رسائل تيليجرام</title>
+    <title>أرشيف رسائل تيليجرام | Advanced</title>
     <style>
+        :root {
+            --bg-color: #f5f5f5;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --border-color: #ddd;
+            --primary-color: #2AABEE;
+            --hover-color: #1c8ac2;
+        }
+
+        body.dark-mode {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --border-color: #333;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             margin: 0;
             padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
         }
+
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
         }
+
+        .controls-panel {
+            background-color: var(--card-bg);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            box-sizing: border-box;
+        }
+
+        .toggle-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        button:hover { background-color: var(--hover-color); }
+        button:disabled { background-color: #888; cursor: not-allowed; }
+        button.btn-danger { background-color: #dc3545; }
+        button.btn-danger:hover { background-color: #c82333; }
+
         #posts-container {
             display: flex;
             flex-direction: column;
             gap: 15px;
         }
+
         .post-card {
-            background-color: #ffffff;
+            background-color: var(--card-bg);
             border-radius: 10px;
             padding: 15px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            word-wrap: break-word;
-            border-right: 4px solid #2AABEE; /* لون تيليجرام */
+            border-right: 4px solid var(--primary-color);
         }
-        .post-date {
-            font-size: 0.8em;
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85em;
             color: #888;
             margin-bottom: 10px;
-            display: block;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
         }
+
         .post-text {
             font-size: 1em;
-            color: #333;
-            line-height: 1.5;
-            white-space: pre-wrap; /* للحفاظ على المسافات والأسطر */
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
+
+        .post-text a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-text a:hover { text-decoration: underline; }
+
+        .post-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: block;
+        }
+
+        .post-actions {
+            margin-top: 15px;
+            text-align: left;
+        }
+
+        .post-actions a {
+            font-size: 0.9em;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
         .pagination {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 20px;
-            margin-top: 30px;
-            padding: 10px;
-            background: #fff;
-            border-radius: 8px;
+            gap: 15px;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--card-bg);
+            border-radius: 10px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-        button {
-            padding: 10px 20px;
-            border: none;
-            background-color: #2AABEE;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background 0.3s;
-        }
-        button:hover {
-            background-color: #1c8ac2;
-        }
-        button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-        #pageInfo {
-            font-weight: bold;
-            color: #555;
-        }
-        .loading {
+
+        .loading, .no-results {
             text-align: center;
+            padding: 40px;
             font-size: 1.2em;
-            color: #666;
-            padding: 50px;
+            color: #888;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <div class="controls-panel">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="ابحث في البوستات...">
+        </div>
+        
+        <div>
+            <select id="filterSelect">
+                <option value="all">الكل</option>
+                <option value="with_images">يحتوي على صور</option>
+                <option value="with_links">يحتوي على روابط</option>
+            </select>
+        </div>
+
+        <div class="toggle-btns">
+            <button id="toggleImagesBtn">إيقاف الصور 🖼️</button>
+            <button id="themeToggleBtn">الوضع الداكن 🌙</button>
+        </div>
+    </div>
+
     <div id="posts-container">
         <div class="loading">جاري تحميل البيانات...</div>
     </div>
@@ -95,85 +198,188 @@
 </div>
 
 <script>
-    let allPosts = [];       
-    let currentPage = 1;     
-    const postsPerPage = 100; 
+    let allPosts = [];
+    let filteredPosts = [];
+    let currentPage = 1;
+    const postsPerPage = 100;
+    
+    // إعدادات المستخدم
+    let showImages = true;
+    let isDarkMode = false;
+
+    // اسم القناة أو الرابط الأساسي لتيليجرام (قم بتعديله)
+    const telegramChannelUsername = "YourChannelName"; 
+
+    async function init() {
+        bindEvents();
+        await loadPosts();
+    }
 
     async function loadPosts() {
         try {
-            // تأكد من أن مسار ملف JSON صحيح
             const response = await fetch('data.json'); 
-            if (!response.ok) throw new Error("فشل تحميل الملف");
+            if (!response.ok) throw new Error("فشل التحميل");
             
             allPosts = await response.json();
             
+            // تهيئة البيانات للبحث بشكل أسرع (استخراج النصوص الصافية إذا كان JSON معقداً)
+            allPosts = allPosts.map(post => {
+                let rawText = post.message || post.text || post.content || '';
+                // دعم تصدير تيليجرام الرسمي حيث يكون النص أحياناً مصفوفة (Array)
+                if (Array.isArray(rawText)) {
+                    rawText = rawText.map(item => typeof item === 'string' ? item : item.text).join('');
+                }
+                return { ...post, parsedText: rawText };
+            });
+
+            filteredPosts = [...allPosts];
+            
             if (allPosts.length === 0) {
-                document.getElementById('posts-container').innerHTML = '<div class="loading">لا توجد بيانات للعرض</div>';
+                document.getElementById('posts-container').innerHTML = '<div class="no-results">لا توجد بيانات</div>';
                 return;
             }
             
-            renderPage(currentPage);
+            renderPage(1);
         } catch (error) {
-            console.error("Error:", error);
-            document.getElementById('posts-container').innerHTML = '<div class="loading" style="color:red;">حدث خطأ أثناء تحميل البيانات. تأكد من وجود ملف data.json</div>';
+            console.error(error);
+            document.getElementById('posts-container').innerHTML = '<div class="no-results" style="color:red;">خطأ في تحميل data.json</div>';
         }
     }
 
     function renderPage(page) {
+        currentPage = page;
         const container = document.getElementById('posts-container'); 
         container.innerHTML = ''; 
 
+        if (filteredPosts.length === 0) {
+            container.innerHTML = '<div class="no-results">لا توجد نتائج مطابقة لبحثك</div>';
+            updateButtons();
+            return;
+        }
+
         const startIndex = (page - 1) * postsPerPage;
         const endIndex = startIndex + postsPerPage;
-        
-        const currentPosts = allPosts.slice(startIndex, endIndex);
+        const currentPosts = filteredPosts.slice(startIndex, endIndex);
 
         currentPosts.forEach(post => {
             const postElement = document.createElement('div');
             postElement.className = 'post-card';
             
-            // قم بتعديل post.date و post.message بناءً على المفاتيح الموجودة في ملف JSON الخاص بك
-            const postDate = post.date || post.timestamp || 'تاريخ غير معروف';
-            const postContent = post.message || post.text || post.content || 'لا يوجد محتوى';
-
-            postElement.innerHTML = `
-                <span class="post-date">${postDate}</span>
-                <div class="post-text">${postContent}</div>
-            `;
+            const postDate = post.date || post.timestamp || '';
+            const messageId = post.id || '';
             
+            // تحويل الروابط في النص إلى Hyperlinks
+            const formattedText = linkify(post.parsedText);
+
+            let htmlContent = `
+                <div class="post-header">
+                    <span>ID: ${messageId}</span>
+                    <span>${postDate}</span>
+                </div>
+                <div class="post-text">${formattedText}</div>
+            `;
+
+            // إضافة الصورة إذا كانت الخاصية مفعلة والبوست يحتوي على صورة
+            if (showImages && (post.photo || post.image)) {
+                const imgSource = post.photo || post.image;
+                // استخدام loading="lazy" لعدم استهلاك الرام
+                htmlContent += `<img src="${imgSource}" class="post-image" loading="lazy" alt="صورة مرفقة">`;
+            }
+
+            // إضافة رابط البوست الأصلي على تيليجرام
+            if (messageId) {
+                htmlContent += `
+                    <div class="post-actions">
+                        <a href="https://t.me/${telegramChannelUsername}/${messageId}" target="_blank">
+                            🔗 عرض في تيليجرام
+                        </a>
+                    </div>
+                `;
+            }
+
+            postElement.innerHTML = htmlContent;
             container.appendChild(postElement);
         });
 
         updateButtons();
     }
 
+    // دالة تحويل الروابط النصية إلى Hyperlinks فعلية
+    function linkify(text) {
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        return text.replace(urlRegex, function(url) {
+            return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+        });
+    }
+
+    function handleFilterAndSearch() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const filterType = document.getElementById('filterSelect').value;
+
+        filteredPosts = allPosts.filter(post => {
+            const textMatch = post.parsedText.toLowerCase().includes(searchTerm);
+            
+            let filterMatch = true;
+            if (filterType === 'with_images') {
+                filterMatch = !!(post.photo || post.image);
+            } else if (filterType === 'with_links') {
+                const urlRegex = /(https?:\/\/[^\s]+)/g;
+                filterMatch = urlRegex.test(post.parsedText);
+            }
+
+            return textMatch && filterMatch;
+        });
+
+        renderPage(1);
+    }
+
     function updateButtons() {
-        const totalPages = Math.ceil(allPosts.length / postsPerPage) || 1;
+        const totalPages = Math.ceil(filteredPosts.length / postsPerPage) || 1;
         
         document.getElementById('pageInfo').innerText = `الصفحة ${currentPage} من ${totalPages}`;
         
         document.getElementById('prevBtn').disabled = currentPage === 1;
-        document.getElementById('nextBtn').disabled = currentPage === totalPages;
+        document.getElementById('nextBtn').disabled = currentPage >= totalPages;
     }
 
-    document.getElementById('prevBtn').addEventListener('click', () => {
-        if (currentPage > 1) {
-            currentPage--;
-            renderPage(currentPage);
-            window.scrollTo(0, 0); 
-        }
-    });
+    function bindEvents() {
+        document.getElementById('searchInput').addEventListener('input', handleFilterAndSearch);
+        document.getElementById('filterSelect').addEventListener('change', handleFilterAndSearch);
 
-    document.getElementById('nextBtn').addEventListener('click', () => {
-        const totalPages = Math.ceil(allPosts.length / postsPerPage);
-        if (currentPage < totalPages) {
-            currentPage++;
-            renderPage(currentPage);
-            window.scrollTo(0, 0); 
-        }
-    });
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (currentPage > 1) {
+                renderPage(currentPage - 1);
+                window.scrollTo(0, 0); 
+            }
+        });
 
-    window.onload = loadPosts;
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+            if (currentPage < totalPages) {
+                renderPage(currentPage + 1);
+                window.scrollTo(0, 0); 
+            }
+        });
+
+        // زر تشغيل/إيقاف الصور
+        const toggleImagesBtn = document.getElementById('toggleImagesBtn');
+        toggleImagesBtn.addEventListener('click', () => {
+            showImages = !showImages;
+            toggleImagesBtn.innerText = showImages ? "إيقاف الصور 🖼️" : "تشغيل الصور 🖼️";
+            toggleImagesBtn.className = showImages ? "" : "btn-danger";
+            renderPage(currentPage); // إعادة رسم الصفحة الحالية بالوضع الجديد
+        });
+
+        // زر الوضع الداكن/الفاتح
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        themeToggleBtn.addEventListener('click', () => {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('dark-mode', isDarkMode);
+            themeToggleBtn.innerText = isDarkMode ? "الوضع الفاتح ☀️" : "الوضع الداكن 🌙";
+        });
+    }
+
+    window.onload = init;
 </script>
 
 </body>
