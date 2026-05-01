@@ -3,169 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Widget Pagination</title>
+    <title>لوحة التحكم في بيانات تيليجرام</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            background-color: #f5f5f5; 
-            margin: 0; 
-            padding: 20px; 
-            transition: background-color 0.3s;
+        :root {
+            --bg: #f0f2f5; --card: #ffffff; --text: #1c1e21; --primary: #0088cc;
         }
-        body.dark-mode { 
-            background-color: #121212; 
-            color: #fff; 
+        body.dark {
+            --bg: #18191a; --card: #242526; --text: #e4e6eb; --primary: #3996fb;
         }
-        .container { 
-            max-width: 700px; 
-            margin: 0 auto; 
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; transition: 0.3s; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        
+        /* أدوات التحكم */
+        .toolbar { 
+            background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 20px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .controls { 
-            margin-bottom: 20px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            background: #fff;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        input, select, button { padding: 10px; border-radius: 6px; border: 1px solid #ddd; outline: none; }
+        button { background: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { opacity: 0.9; }
+        button.off { background: #ff4d4d; }
+
+        /* عرض البوستات */
+        #posts-list { display: flex; flex-direction: column; gap: 15px; }
+        .post-card { 
+            background: var(--card); padding: 20px; border-radius: 12px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-right: 5px solid var(--primary);
         }
-        body.dark-mode .controls {
-            background: #1e1e1e;
-            box-shadow: 0 1px 3px rgba(255,255,255,0.05);
-        }
-        button { 
-            padding: 10px 20px; 
-            background-color: #2AABEE; 
-            color: white; 
-            border: none; 
-            border-radius: 5px; 
-            cursor: pointer; 
-            font-weight: bold;
-        }
-        button:hover { background-color: #1c8ac2; }
-        button:disabled { background-color: #ccc; cursor: not-allowed; }
-        .pagination { 
-            margin-top: 20px; 
-            display: flex; 
-            justify-content: center; 
-            gap: 15px; 
-            align-items: center; 
-            padding: 15px;
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        body.dark-mode .pagination {
-            background: #1e1e1e;
-        }
-        .post-wrapper { 
-            margin-bottom: 20px; 
-            min-height: 100px; /* لمنع اهتزاز الصفحة أثناء التحميل */
-            display: flex;
-            justify-content: center;
-        }
+        .post-meta { font-size: 12px; color: #888; margin-bottom: 10px; display: flex; justify-content: space-between; }
+        .post-content { line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+        .post-content a { color: var(--primary); text-decoration: none; font-weight: bold; }
+        
+        .img-container { margin-top: 15px; border-radius: 8px; overflow: hidden; max-height: 500px; display: none; }
+        .img-container.active { display: block; }
+        img { width: 100%; height: auto; object-fit: contain; }
+
+        .tg-link { display: inline-block; margin-top: 15px; font-size: 14px; color: var(--primary); }
+
+        /* الترقيم */
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 20px; margin-top: 30px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="controls">
-        <button id="themeToggleBtn">الوضع الداكن 🌙</button>
-        <span style="font-weight: bold; color: #2AABEE;">Telegram Auto-Widget</span>
+    <div class="toolbar">
+        <input type="text" id="search" placeholder="بحث في النصوص...">
+        <select id="filter">
+            <option value="all">كل الرسائل</option>
+            <option value="media">رسائل تحتوي صور</option>
+            <option value="links">رسائل تحتوي روابط</option>
+        </select>
+        <button id="img-toggle">إيقاف الصور 🖼️</button>
+        <button id="theme-toggle">الوضع الداكن 🌙</button>
     </div>
 
-    <div id="posts-container"></div>
+    <div id="posts-list"></div>
 
     <div class="pagination">
-        <button id="nextBtn">التالي (أقدم)</button>
-        <span id="pageInfo">الصفحة 1</span>
-        <button id="prevBtn" disabled>السابق (أحدث)</button>
+        <button id="prev">السابق</button>
+        <span id="page-num">الصفحة 1</span>
+        <button id="next">التالي</button>
     </div>
 </div>
 
 <script>
-    // --- إعدادات القناة الأساسية ---
-    // 1. ضع الـ Username الخاص بالقناة بدون @
-    const channelName = "telegram"; 
-    // 2. ضع رقم أحدث بوست في القناة لتبدأ السحب منه تنازلياً
-    const latestPostId = 500; 
-    // 3. عدد البوستات في الصفحة (موصى بـ 50 كحد أقصى لتجنب انهيار المتصفح بسبب كثرة الـ iframes)
-    const postsPerPage = 100; 
-    // -------------------------------
+    // --- إعدادات الربط والقناة ---
+    const CONFIG = {
+        GITHUB_TOKEN: 'YOUR_GITHUB_TOKEN', // اتركها فارغة إذا كان الملف محلياً بجانب الـ HTML
+        JSON_URL: 'data.json',
+        CHANNEL_USERNAME: 'MyChannelName', // اسم القناة (للعامة)
+        CHANNEL_ID: '123456789', // الـ ID بدون -100 (للخاصة)
+        IS_PRIVATE: false // اجعلها true إذا كانت القناة Private
+    };
 
+    let allData = [];
+    let filteredData = [];
     let currentPage = 1;
-    let isDarkMode = false;
+    const limit = 100;
+    let showImages = true;
 
-    function renderWidgets(page) {
-        const container = document.getElementById('posts-container');
-        container.innerHTML = ''; 
+    async function fetchData() {
+        try {
+            const headers = CONFIG.GITHUB_TOKEN ? { 'Authorization': `token ${CONFIG.GITHUB_TOKEN}` } : {};
+            const response = await fetch(CONFIG.JSON_URL, { headers });
+            allData = await response.json();
+            filteredData = allData;
+            render();
+        } catch (e) {
+            document.getElementById('posts-list').innerHTML = "حدث خطأ في تحميل ملف الـ JSON.";
+        }
+    }
 
-        // حساب أرقام الـ ID من الأحدث للأقدم بناءً على الصفحة الحالية
-        const startPostId = latestPostId - ((page - 1) * postsPerPage);
-        const endPostId = Math.max(1, startPostId - postsPerPage + 1);
+    function render() {
+        const list = document.getElementById('posts-list');
+        list.innerHTML = '';
+        
+        const start = (currentPage - 1) * limit;
+        const pageItems = filteredData.slice(start, start + limit);
 
-        // إنشاء الـ Widgets برمجياً
-        for (let id = startPostId; id >= endPostId; id--) {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'post-wrapper';
-
-            const script = document.createElement('script');
-            script.async = true;
-            script.src = "https://telegram.org/js/telegram-widget.js?22";
-            script.setAttribute('data-telegram-post', `${channelName}/${id}`);
-            script.setAttribute('data-width', '100%');
+        pageItems.forEach(item => {
+            const text = item.message || item.text || "";
+            const card = document.createElement('div');
+            card.className = 'post-card';
             
-            // تطبيق الوضع الداكن على الويدجت إذا كان مفعلاً
-            if (isDarkMode) {
-                script.setAttribute('data-color-theme', 'dark');
-            }
+            // تحويل الروابط لنصوص قابلة للضغط
+            const linkedText = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+            
+            // بناء رابط تيليجرام
+            const tgLink = CONFIG.IS_PRIVATE 
+                ? `https://t.me/c/${CONFIG.CHANNEL_ID}/${item.id}`
+                : `https://t.me/${CONFIG.CHANNEL_USERNAME}/${item.id}`;
 
-            wrapper.appendChild(script);
-            container.appendChild(wrapper);
-        }
+            card.innerHTML = `
+                <div class="post-meta">
+                    <span>ID: ${item.id}</span>
+                    <span>${item.date || ''}</span>
+                </div>
+                <div class="post-content">${linkedText}</div>
+                <div class="img-container ${showImages && (item.photo || item.image) ? 'active' : ''}">
+                    <img src="${item.photo || item.image}" loading="lazy">
+                </div>
+                <a href="${tgLink}" target="_blank" class="tg-link">🔗 الرابط الأصلي</a>
+            `;
+            list.appendChild(card);
+        });
 
-        updateButtons();
+        document.getElementById('page-num').innerText = `الصفحة ${currentPage} من ${Math.ceil(filteredData.length / limit)}`;
+        document.getElementById('prev').disabled = currentPage === 1;
+        document.getElementById('next').disabled = start + limit >= filteredData.length;
     }
 
-    function updateButtons() {
-        document.getElementById('pageInfo').innerText = `الصفحة ${currentPage}`;
-        
-        // تعطيل زر "السابق" إذا كنا في الصفحة الأولى
-        document.getElementById('prevBtn').disabled = currentPage === 1;
-        
-        // تعطيل زر "التالي" إذا وصلنا للبوست رقم 1
-        const startPostId = latestPostId - ((currentPage - 1) * postsPerPage);
-        const endPostId = startPostId - postsPerPage + 1;
-        document.getElementById('nextBtn').disabled = endPostId <= 1;
-    }
+    // البحث والفلترة
+    document.getElementById('search').oninput = (e) => {
+        const term = e.target.value.toLowerCase();
+        filteredData = allData.filter(item => (item.message || item.text || "").toLowerCase().includes(term));
+        currentPage = 1;
+        render();
+    };
 
-    document.getElementById('prevBtn').addEventListener('click', () => {
-        if (currentPage > 1) {
-            currentPage--;
-            renderWidgets(currentPage);
-            window.scrollTo(0, 0);
-        }
-    });
+    document.getElementById('filter').onchange = (e) => {
+        const val = e.target.value;
+        if(val === 'media') filteredData = allData.filter(i => i.photo || i.image);
+        else if(val === 'links') filteredData = allData.filter(i => /(https?:\/\/[^\s]+)/g.test(i.message || i.text));
+        else filteredData = allData;
+        currentPage = 1;
+        render();
+    };
 
-    document.getElementById('nextBtn').addEventListener('click', () => {
-        currentPage++;
-        renderWidgets(currentPage);
-        window.scrollTo(0, 0);
-    });
+    // أزرار التحكم
+    document.getElementById('img-toggle').onclick = (e) => {
+        showImages = !showImages;
+        e.target.innerText = showImages ? "إيقاف الصور 🖼️" : "تشغيل الصور 🖼️";
+        e.target.classList.toggle('off');
+        render();
+    };
 
-    document.getElementById('themeToggleBtn').addEventListener('click', () => {
-        isDarkMode = !isDarkMode;
-        document.body.classList.toggle('dark-mode', isDarkMode);
-        document.getElementById('themeToggleBtn').innerText = isDarkMode ? "الوضع الفاتح ☀️" : "الوضع الداكن 🌙";
-        
-        // إعادة رسم الويدجتس لتطبيق الثيم الجديد من سيرفرات تيليجرام
-        renderWidgets(currentPage); 
-    });
+    document.getElementById('theme-toggle').onclick = () => document.body.classList.toggle('dark');
+    document.getElementById('next').onclick = () => { currentPage++; render(); window.scrollTo(0,0); };
+    document.getElementById('prev').onclick = () => { currentPage--; render(); window.scrollTo(0,0); };
 
-    // تحميل البوستات عند فتح الصفحة
-    window.onload = () => renderWidgets(currentPage);
+    fetchData();
 </script>
-
 </body>
 </html>
