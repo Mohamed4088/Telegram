@@ -2,8 +2,8 @@ name: Telegram Scraper
 
 on:
   schedule:
-    - cron: '0 */6 * * *' # يشتغل تلقائياً كل 6 ساعات
-  workflow_dispatch: # زر للتشغيل اليدوي
+    - cron: '0 */4 * * *' # تم تقليل المدة ليعمل كل 4 ساعات (بما أن الكود أصبح خفيفاً جداً)
+  workflow_dispatch:
 
 jobs:
   build:
@@ -31,5 +31,5 @@ jobs:
       - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "Auto-update Telegram Posts"
-          file_pattern: "data.json media/*"
+          commit_message: "Auto-update Posts (Text & Links)"
+          file_pattern: "data.json"
