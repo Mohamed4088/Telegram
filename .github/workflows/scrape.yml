@@ -1,4 +1,4 @@
-name: Update Telegram Feed
+name: Telegram Scraper
 
 on:
   schedule:
@@ -12,13 +12,17 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-      - name: Install Telethon
+
+      - name: Install Dependencies
         run: pip install telethon
+
       - name: Run Scraper
         env:
           API_ID: ${{ secrets.API_ID }}
@@ -26,8 +30,9 @@ jobs:
           SESSION_STRING: ${{ secrets.SESSION_STRING }}
           CHANNELS_LIST: ${{ secrets.CHANNELS_LIST }}
         run: python scraper.py
-      - name: Deploy to GitHub Pages
-        uses: stefanzweifel/git-auto-commit-action@v4
+
+      - name: Commit and Push Changes
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Update feed data"
+          commit_message: "Auto-update Telegram Posts"
           file_pattern: "data.json"
