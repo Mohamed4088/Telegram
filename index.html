@@ -16,7 +16,7 @@
         }
     </script>
     <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-    
+
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -35,7 +35,6 @@
         .type-badge { font-size: 0.70rem; padding: 2px 8px; border-radius: 9999px; font-weight: 500; }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
-        /* Hide Google Translate Top Bar */
         .goog-te-banner-frame.skiptranslate { display: none !important; }
         body { top: 0px !important; }
         .goog-te-gadget { font-family: Roboto, sans-serif !important; font-size: 0 !important; }
@@ -97,7 +96,6 @@
                     class="w-full p-2.5 pr-8 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all">
                 <span id="clearSearch" onclick="clearSearchInput()" class="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-slate-400 hover:text-red-500 hidden font-bold text-xs">✕</span>
             </div>
-
         </div>
         <div class="flex flex-wrap gap-2">
             <select id="channelFilter" class="flex-1 min-w-[120px] p-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-xs outline-none font-medium">
@@ -166,7 +164,12 @@
         video:      { icon: '🎬', label: 'Video',    color: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300' },
         document:   { icon: '📎', label: 'File',     color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300' },
         voice:      { icon: '🎤', label: 'Voice',    color: 'bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300' },
-        poll:       { icon: '📊', label: 'Poll',     color: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' }
+        poll:       { icon: '📊', label: 'Poll',     color: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' },
+        pdf:        { icon: '📄', label: 'PDF',      color: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300' },
+        video_note: { icon: '⭕', label: 'Video Note',color: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300' },
+        sticker:    { icon: '🎭', label: 'Sticker',  color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300' },
+        location:   { icon: '📍', label: 'Location', color: 'bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300' },
+        contact:    { icon: '👤', label: 'Contact',  color: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' },
     };
 
     // ====== Init ======
@@ -176,6 +179,8 @@
                 fetch('data.json'),
                 fetch('stats.json').catch(() => null)
             ]);
+
+            if (!postsRes.ok) throw new Error('data.json not found');
             allPosts = await postsRes.json();
 
             if (statsRes && statsRes.ok) {
@@ -195,14 +200,19 @@
             applyFilters();
             setupLongPressEvents();
         } catch (err) {
-            document.getElementById('feed').innerHTML = `<div class="text-center py-10"><h3 class="text-sm font-bold text-red-500">Error loading data</h3></div>`;
+            document.getElementById('feed').innerHTML = `
+                <div class="text-center py-10">
+                    <div class="text-4xl mb-2">⚠️</div>
+                    <h3 class="text-sm font-bold text-red-500">Error loading data</h3>
+                    <p class="text-xs text-slate-400 mt-1">${err.message}</p>
+                </div>`;
         }
     }
 
     function updateStats() {
         document.getElementById('statTotal').textContent = allPosts.length;
         document.getElementById('statChannels').textContent = new Set(allPosts.map(p => p.channel)).size;
-        document.getElementById('statMedia').textContent = allPosts.filter(p => p.type !== 'text').length;
+        document.getElementById('statMedia').textContent = allPosts.filter(p => p.has_media).length;
     }
 
     // ====== Hashtags ======
@@ -241,7 +251,9 @@
         document.getElementById('clearSearch').classList.toggle('hidden', !search);
 
         filteredPosts = allPosts.filter(p => {
-            if (search && !p.text.toLowerCase().includes(search) && !p.channel.toLowerCase().includes(search)) return false;
+            const text = (p.text || '').toLowerCase();
+            const ch   = (p.channel || '').toLowerCase();
+            if (search && !text.includes(search) && !ch.includes(search)) return false;
             if (channel !== 'all' && p.channel !== channel) return false;
             if (type !== 'all' && p.type !== type) return false;
             return true;
@@ -254,11 +266,11 @@
         }
 
         document.getElementById('statFiltered').textContent = filteredPosts.length;
-        
+
         const tagsDiv = document.getElementById('filterTags');
         tagsDiv.innerHTML = '';
-        if(search) tagsDiv.innerHTML += `<span class="text-[10px] bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded">"${search}"</span>`;
-        if(channel !== 'all') tagsDiv.innerHTML += `<span class="text-[10px] bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded">${channel}</span>`;
+        if (search)         tagsDiv.innerHTML += `<span class="text-[10px] bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded">"${search}"</span>`;
+        if (channel !== 'all') tagsDiv.innerHTML += `<span class="text-[10px] bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded">${channel}</span>`;
         document.getElementById('activeFilters').classList.toggle('hidden', !search && channel === 'all');
 
         currentIndex = 0;
@@ -274,7 +286,7 @@
 
     function processText(rawText, searchTerm) {
         if (!rawText) return { visible: '', hidden: '', isTruncated: false };
-        
+
         let isTruncated = false;
         let visibleText = rawText;
         let hiddenText = '';
@@ -283,7 +295,7 @@
             let breakpoint = rawText.lastIndexOf(' ', 250);
             if (breakpoint === -1) breakpoint = 250;
             visibleText = rawText.slice(0, breakpoint);
-            hiddenText = rawText.slice(breakpoint);
+            hiddenText  = rawText.slice(breakpoint);
             isTruncated = true;
         }
 
@@ -297,11 +309,7 @@
             return formatted.replace(/\n/g, '<br>');
         };
 
-        return {
-            visible: format(visibleText),
-            hidden: format(hiddenText),
-            isTruncated
-        };
+        return { visible: format(visibleText), hidden: format(hiddenText), isTruncated };
     }
 
     function toggleReadMore(btn) {
@@ -340,6 +348,11 @@
                                 <button onclick="toggleReadMore(this)" class="text-blue-500 font-bold text-xs ml-1 notranslate">... Read More</button>`;
             }
 
+            // بادج "Forwarded" لو البوست منقول
+            const forwardedBadge = post.is_forwarded
+                ? `<span class="text-[10px] text-slate-400 italic">↩ Forwarded</span>`
+                : '';
+
             const card = document.createElement('div');
             card.className = 'fade-in';
             card.innerHTML = `
@@ -348,9 +361,10 @@
                         <div class="flex items-center gap-2">
                             <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-sm">📢</div>
                             <div class="flex flex-col">
-                                <span class="text-[13px] font-bold leading-tight">${post.channel}</span>
+                                <span class="text-[13px] font-bold leading-tight">${escapeHtml(post.channel)}</span>
                                 <div class="flex items-center gap-1 mt-0.5">
                                     <span class="type-badge ${typeInfo.color}">${typeInfo.icon} ${typeInfo.label}</span>
+                                    ${forwardedBadge}
                                 </div>
                             </div>
                         </div>
@@ -361,8 +375,9 @@
                     </div>
                     <div class="flex justify-between items-center px-4 py-2 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 notranslate">
                         <div class="flex gap-3">
-                            ${post.views ? `<span>👁️ ${formatNum(post.views)}</span>` : ''}
-                            ${post.reactions ? `<span>❤️ ${formatNum(post.reactions)}</span>` : ''}
+                            ${post.views    ? `<span>👁️ ${formatNum(post.views)}</span>`    : ''}
+                            ${post.forwards ? `<span>↩ ${formatNum(post.forwards)}</span>` : ''}
+                            ${post.reactions? `<span>❤️ ${formatNum(post.reactions)}</span>`: ''}
                         </div>
                         <a href="${post.link}" target="_blank" class="text-blue-500 font-bold telegram-link" data-url="${post.link}">Open ↗</a>
                     </div>
@@ -375,10 +390,10 @@
         document.getElementById('progressInfo').textContent = `Showing ${Math.min(currentIndex, filteredPosts.length)} of ${filteredPosts.length}`;
     }
 
-    // ====== Long Press to Copy Events ======
+    // ====== Long Press to Copy ======
     let pressTimer;
     let isLongPress = false;
-    
+
     function showToast() {
         const toast = document.getElementById('toast');
         toast.classList.remove('opacity-0');
@@ -391,7 +406,7 @@
 
     function setupLongPressEvents() {
         const feed = document.getElementById('feed');
-        
+
         const startPress = (e) => {
             const target = e.target.closest('.telegram-link');
             if (!target) return;
@@ -399,32 +414,32 @@
             pressTimer = setTimeout(() => {
                 isLongPress = true;
                 navigator.clipboard.writeText(target.dataset.url).then(() => showToast());
-            }, 500); // 500ms trigger
+            }, 500);
         };
 
         const cancelPress = () => clearTimeout(pressTimer);
 
         feed.addEventListener('mousedown', startPress);
-        feed.addEventListener('touchstart', startPress, {passive: true});
+        feed.addEventListener('touchstart', startPress, { passive: true });
         feed.addEventListener('mouseup', cancelPress);
         feed.addEventListener('mouseleave', cancelPress);
         feed.addEventListener('touchend', cancelPress);
-        
         feed.addEventListener('click', (e) => {
             const target = e.target.closest('.telegram-link');
-            if (target && isLongPress) {
-                e.preventDefault(); // Prevent opening link if it was a long press
-            }
+            if (target && isLongPress) e.preventDefault();
         });
     }
 
     // ====== Helpers ======
     function formatNum(n) {
         if (!n) return '0';
-        if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+        if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+        if (n >= 1000)    return (n / 1000).toFixed(1) + 'K';
         return n.toString();
     }
-    function escapeHtml(str) { return str ? str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''; }
+    function escapeHtml(str) {
+        return str ? str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
+    }
     function escapeRegex(str) { return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
     function clearSearchInput() { document.getElementById('searchInput').value = ''; applyFilters(); }
     function resetAllFilters() {
@@ -433,25 +448,20 @@
         document.getElementById('typeFilter').value = 'all';
         applyFilters();
     }
-    function exportCSV() { /* CSV logic unchanged, omitted for brevity if needed, but keeping simple */ }
 
     // ====== Translation ======
     function translatePage(lang) {
-    const observer = new MutationObserver((mutations, obs) => {
-        const combo = document.querySelector('.goog-te-combo');
-        if (combo) {
-            combo.value = lang;
-            combo.dispatchEvent(new Event('change'));
-            obs.disconnect();
-            // تحديث شكل الأزرار...
-        }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-    // بعد 4 ثواني لو مظهرش يوقف المراقبة
-    setTimeout(() => observer.disconnect(), 4000);
-    }
+        const trySet = (attempts) => {
+            if (attempts <= 0) return;
+            const combo = document.querySelector('.goog-te-combo');
+            if (combo) {
+                combo.value = lang;
+                combo.dispatchEvent(new Event('change'));
+            } else {
+                setTimeout(() => trySet(attempts - 1), 400);
+            }
         };
-        tryTranslate(10);
+        trySet(10);
     }
 
     // ====== Theme ======
