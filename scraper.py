@@ -1,6 +1,7 @@
 # scraper.py
 import os
 import json
+import math
 import asyncio
 from telethon import TelegramClient
 from telethon.sessions import StringSession
@@ -12,15 +13,15 @@ SESSION_STRING = os.environ['SESSION_STRING']
 CHANNELS_LIST = os.environ.get('CHANNELS_LIST', '')
 
 # ====== الإعدادات ======
-POSTS_PER_CHANNEL = 50   # حد أقصى لكل قناة لو القناة جديدة ومفيش بيانات قديمة
-TOTAL_LIMIT = 200        # الحد الأقصى للبوستات المحفوظة في data.json
-SLEEP_BETWEEN = 1.5
-DATA_FILE = 'data.json'
-STATS_FILE = 'stats.json'
+POSTS_PER_CHANNEL = 50    # حد أقصى لكل قناة لو قناة جديدة
+TOTAL_LIMIT       = 50000 # الحد الأقصى للأرشيف الكامل
+DISPLAY_PER_PAGE  = 200   # عدد البوستات في كل صفحة للـ HTML
+SLEEP_BETWEEN     = 1.5
+ARCHIVE_FILE      = 'archive.json'
+STATS_FILE        = 'stats.json'
 
 
 def detect_post_type(message):
-    """تحديد نوع البوست بدقة"""
     if message.photo:
         return 'photo'
     elif message.video:
@@ -50,7 +51,6 @@ def detect_post_type(message):
 
 
 def extract_hashtags(text):
-    """استخراج الهاشتاقات من النص"""
     if not text:
         return []
     import re
@@ -58,29 +58,23 @@ def extract_hashtags(text):
 
 
 def load_existing_posts():
-    """تحميل البوستات القديمة من الملف"""
-    if os.path.exists(DATA_FILE):
+    if os.path.exists(ARCHIVE_FILE):
         try:
-            with open(DATA_FILE, 'r', encoding='utf-8') as f:
+            with open(ARCHIVE_FILE, 'r', encoding='utf-8') as f:
                 data = json.load(f)
                 if isinstance(data, list):
-                    print(f"📂 تم تحميل {len(data)} بوست قديم من {DATA_FILE}")
+                    print(f"📂 تم تحميل {len(data)} بوست من الأرشيف")
                     return data
-        except (json.JSONDecodeError, Exception) as e:
-            print(f"⚠️ خطأ في قراءة الملف القديم: {e}")
-
-    print("📂 لا يوجد ملف قديم، سيتم إنشاء ملف جديد")
+        except Exception as e:
+            print(f"⚠️ خطأ في قراءة الأرشيف: {e}")
+    print("📂 لا يوجد أرشيف قديم، سيتم إنشاء أرشيف جديد")
     return []
 
 
 def get_last_id_per_channel(posts):
-    """
-    آخر post ID محفوظ لكل قناة
-    بيتستخدم كـ min_id عشان نسحب بس الجديد
-    """
     last_ids = {}
     for post in posts:
-        ch = post.get('channel', '')
+        ch  = post.get('channel', '')
         pid = post.get('id', 0)
         if ch not in last_ids or pid > last_ids[ch]:
             last_ids[ch] = pid
@@ -88,25 +82,18 @@ def get_last_id_per_channel(posts):
 
 
 def merge_posts(old_posts, new_posts):
-    """
-    دمج البوستات القديمة مع الجديدة بدون تكرار
-    المفتاح الفريد = channel + id
-    لو البوست موجود → يتحدث (مشاهدات، تفاعلات...)
-    لو بوست جديد → يتضاف
-    في النهاية بيحتفظ بأحدث TOTAL_LIMIT بوست فقط
-    """
     posts_map = {}
     for post in old_posts:
         key = f"{post.get('channel', '')}_{post.get('id', '')}"
         posts_map[key] = post
 
-    new_count = 0
+    new_count     = 0
     updated_count = 0
     for post in new_posts:
         key = f"{post.get('channel', '')}_{post.get('id', '')}"
         if key in posts_map:
-            posts_map[key]['views'] = post.get('views', 0)
-            posts_map[key]['forwards'] = post.get('forwards', 0)
+            posts_map[key]['views']     = post.get('views', 0)
+            posts_map[key]['forwards']  = post.get('forwards', 0)
             posts_map[key]['reactions'] = post.get('reactions', 0)
             updated_count += 1
         else:
@@ -116,43 +103,58 @@ def merge_posts(old_posts, new_posts):
     print(f"  🆕 بوستات جديدة: {new_count}")
     print(f"  🔄 بوستات محدّثة: {updated_count}")
 
-    # رتب بالأحدث واحتفظ بـ TOTAL_LIMIT بس
     merged = list(posts_map.values())
     merged.sort(key=lambda x: x.get('date', ''), reverse=True)
     merged = merged[:TOTAL_LIMIT]
-
     return merged
+
+
+def save_pages(merged_posts):
+    # 1) الأرشيف الكامل
+    with open(ARCHIVE_FILE, 'w', encoding='utf-8') as f:
+        json.dump(merged_posts, f, ensure_ascii=False, indent=2)
+    print(f"💾 تم حفظ الأرشيف الكامل: {len(merged_posts)} بوست")
+
+    # 2) تقسيم لصفحات
+    total_pages = max(1, math.ceil(len(merged_posts) / DISPLAY_PER_PAGE))
+    for i in range(total_pages):
+        chunk    = merged_posts[i * DISPLAY_PER_PAGE:(i + 1) * DISPLAY_PER_PAGE]
+        filename = f'data_page_{i + 1}.json'
+        with open(filename, 'w', encoding='utf-8') as f:
+            json.dump(chunk, f, ensure_ascii=False, indent=2)
+
+    print(f"📄 تم إنشاء {total_pages} صفحة (كل صفحة {DISPLAY_PER_PAGE} بوست)")
+    return total_pages
 
 
 async def main():
     client = TelegramClient(StringSession(SESSION_STRING), API_ID, API_HASH)
     await client.start()
 
-    # تحميل البيانات القديمة وعمل index بآخر ID لكل قناة
     old_posts = load_existing_posts()
-    last_ids = get_last_id_per_channel(old_posts)
+    last_ids  = get_last_id_per_channel(old_posts)
 
     if last_ids:
-        print(f"🔖 عندنا بيانات قديمة لـ {len(last_ids)} قناة، هنسحب الجديد فقط")
+        print(f"🔖 عندنا أرشيف لـ {len(last_ids)} قناة، هنسحب الجديد فقط")
     else:
         print(f"🆕 أول رانة، هنسحب آخر {POSTS_PER_CHANNEL} بوست من كل قناة")
 
-    new_posts = []
+    new_posts     = []
     channel_stats = {}
 
-    raw_channels = [ch.strip() for ch in CHANNELS_LIST.split(',') if ch.strip()]
-    target_identifiers = [
+    raw_channels        = [ch.strip() for ch in CHANNELS_LIST.split(',') if ch.strip()]
+    target_identifiers  = [
         ch.replace('https://t.me/', '').replace('@', '').lower()
         for ch in raw_channels
     ]
 
-    dialogs = await client.get_dialogs()
+    dialogs         = await client.get_dialogs()
     target_entities = []
 
     for dialog in dialogs:
         if dialog.is_channel or dialog.is_group:
-            entity = dialog.entity
-            username = getattr(entity, 'username', None)
+            entity         = dialog.entity
+            username       = getattr(entity, 'username', None)
             channel_id_str = str(entity.id).replace('-100', '')
             if (username and username.lower() in target_identifiers) or \
                (channel_id_str in target_identifiers):
@@ -163,35 +165,27 @@ async def main():
     for entity in target_entities:
         try:
             channel_title = getattr(entity, 'title', 'Private')
-            username = getattr(entity, 'username', None)
-            count = 0
-
-            # لو عندنا آخر ID للقناة دي → اسحب الجديد بس
-            # لو قناة جديدة → اسحب آخر POSTS_PER_CHANNEL
-            min_id = last_ids.get(channel_title, 0)
+            username      = getattr(entity, 'username', None)
+            count         = 0
+            min_id        = last_ids.get(channel_title, 0)
 
             if min_id > 0:
                 print(f"  ⏳ {channel_title}: سحب الجديد بعد ID {min_id}...")
             else:
                 print(f"  ⏳ {channel_title}: قناة جديدة، سحب آخر {POSTS_PER_CHANNEL} بوست...")
 
-            async for message in client.iter_messages(
-                entity,
-                min_id=min_id,
-                limit=POSTS_PER_CHANNEL  # حماية من قنوات فيها ألاف البوستات الجديدة
-            ):
+            async for message in client.iter_messages(entity, min_id=min_id, limit=POSTS_PER_CHANNEL):
                 if username:
                     post_link = f"https://t.me/{username}/{message.id}"
                 else:
-                    peer_id = str(entity.id).replace("-100", "")
+                    peer_id   = str(entity.id).replace("-100", "")
                     post_link = f"https://t.me/c/{peer_id}/{message.id}"
 
                 post_type = detect_post_type(message)
-                text = message.text or message.message or ''
-                hashtags = extract_hashtags(text)
-
-                views = getattr(message, 'views', 0) or 0
-                forwards = getattr(message, 'forwards', 0) or 0
+                text      = message.text or message.message or ''
+                hashtags  = extract_hashtags(text)
+                views     = getattr(message, 'views', 0) or 0
+                forwards  = getattr(message, 'forwards', 0) or 0
 
                 reactions_count = 0
                 if hasattr(message, 'reactions') and message.reactions:
@@ -199,19 +193,19 @@ async def main():
                         reactions_count += r.count
 
                 new_posts.append({
-                    'id': message.id,
-                    'channel': channel_title,
+                    'id':               message.id,
+                    'channel':          channel_title,
                     'channel_username': username or '',
-                    'text': text if text else '[ميديا فقط]',
-                    'type': post_type,
-                    'date': message.date.isoformat(),
-                    'link': post_link,
-                    'views': views,
-                    'forwards': forwards,
-                    'reactions': reactions_count,
-                    'hashtags': hashtags,
-                    'has_media': post_type != 'text',
-                    'is_forwarded': bool(getattr(message, 'forward', None)),
+                    'text':             text if text else '[ميديا فقط]',
+                    'type':             post_type,
+                    'date':             message.date.isoformat(),
+                    'link':             post_link,
+                    'views':            views,
+                    'forwards':         forwards,
+                    'reactions':        reactions_count,
+                    'hashtags':         hashtags,
+                    'has_media':        post_type != 'text',
+                    'is_forwarded':     bool(getattr(message, 'forward', None)),
                 })
                 count += 1
 
@@ -227,28 +221,26 @@ async def main():
             print(f"  ❌ خطأ في {getattr(entity, 'title', '?')}: {e}")
             continue
 
-    # ====== الدمج مع البيانات القديمة ======
     print("\n📦 جاري دمج البيانات...")
     merged_posts = merge_posts(old_posts, new_posts)
 
     print(f"\n📊 الإحصائيات:")
-    print(f"  📂 البوستات القديمة: {len(old_posts)}")
+    print(f"  📂 البوستات القديمة:  {len(old_posts)}")
     print(f"  📥 البوستات المسحوبة: {len(new_posts)}")
-    print(f"  📚 الإجمالي بعد الدمج: {len(merged_posts)} (حد أقصى {TOTAL_LIMIT})")
+    print(f"  📚 الإجمالي:          {len(merged_posts)}")
 
-    # حفظ البوستات
-    with open(DATA_FILE, 'w', encoding='utf-8') as f:
-        json.dump(merged_posts, f, ensure_ascii=False, indent=2)
+    total_pages = save_pages(merged_posts)
 
-    # حفظ الإحصائيات
     stats = {
-        'last_update': datetime.utcnow().isoformat(),
-        'total_posts': len(merged_posts),
+        'last_update':    datetime.utcnow().isoformat(),
+        'total_posts':    len(merged_posts),
+        'total_pages':    total_pages,
+        'per_page':       DISPLAY_PER_PAGE,
         'channels_count': len(target_entities),
-        'channels': channel_stats,
-        'types': {},
+        'channels':       channel_stats,
+        'types':          {},
         'history': {
-            'old_posts': len(old_posts),
+            'old_posts':   len(old_posts),
             'new_scraped': len(new_posts),
             'after_merge': len(merged_posts),
         }
@@ -260,7 +252,7 @@ async def main():
     with open(STATS_FILE, 'w', encoding='utf-8') as f:
         json.dump(stats, f, ensure_ascii=False, indent=2)
 
-    print(f"\n🎉 تم حفظ {len(merged_posts)} بوست بنجاح!")
+    print(f"\n🎉 تم! {len(merged_posts)} بوست في {total_pages} صفحة")
     await client.disconnect()
 
 
