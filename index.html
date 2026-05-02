@@ -53,11 +53,21 @@
             <h1 class="text-lg font-bold">Channels Radio</h1>
         </div>
         <p class="text-slate-500 dark:text-gray-400 text-[11px]" id="lastUpdate">Last update: Loading...</p>
-        <div class="flex justify-center gap-2 mt-2 items-center">
-            <button id="themeBtn" onclick="toggleTheme()" class="text-xs bg-slate-200 dark:bg-slate-800 px-3 py-1.5 rounded-xl transition-transform font-medium">
+        <div class="flex justify-center gap-2 mt-2 items-center flex-wrap">
+            <button id="themeBtn" onclick="toggleTheme()" class="text-xs bg-slate-200 dark:bg-slate-800 px-3 py-1.5 rounded-xl transition-all font-medium hover:scale-105">
                 🌙 Dark
             </button>
-            <div id="google_translate_element"></div>
+            <button onclick="translatePage('ar')" id="btnAr"
+                class="translate-btn text-xs font-bold px-3 py-1.5 rounded-xl transition-all hover:scale-105 shadow-sm
+                       bg-gradient-to-r from-green-500 to-emerald-500 text-white">
+                🌐 عربي
+            </button>
+            <button onclick="translatePage('en')" id="btnEn"
+                class="translate-btn text-xs font-bold px-3 py-1.5 rounded-xl transition-all hover:scale-105 shadow-sm
+                       bg-gradient-to-r from-blue-500 to-cyan-500 text-white">
+                🌐 English
+            </button>
+            <div id="google_translate_element" class="hidden absolute"></div>
         </div>
     </header>
 
@@ -87,7 +97,7 @@
                     class="w-full p-2.5 pr-8 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all">
                 <span id="clearSearch" onclick="clearSearchInput()" class="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-slate-400 hover:text-red-500 hidden font-bold text-xs">✕</span>
             </div>
-            <button onclick="exportCSV()" class="bg-green-500 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-green-600 transition-all shadow-sm">📥 CSV</button>
+
         </div>
         <div class="flex flex-wrap gap-2">
             <select id="channelFilter" class="flex-1 min-w-[120px] p-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-xs outline-none font-medium">
@@ -424,6 +434,28 @@
         applyFilters();
     }
     function exportCSV() { /* CSV logic unchanged, omitted for brevity if needed, but keeping simple */ }
+
+    // ====== Translation ======
+    function translatePage(lang) {
+        // Wait for Google Translate combo to be ready
+        const tryTranslate = (attempts) => {
+            const combo = document.querySelector('.goog-te-combo');
+            if (combo) {
+                combo.value = lang;
+                combo.dispatchEvent(new Event('change'));
+                // Update button active states
+                document.getElementById('btnAr').classList.toggle('opacity-60', lang !== 'ar');
+                document.getElementById('btnEn').classList.toggle('opacity-60', lang !== 'en');
+                document.getElementById('btnAr').classList.toggle('ring-2', lang === 'ar');
+                document.getElementById('btnAr').classList.toggle('ring-green-300', lang === 'ar');
+                document.getElementById('btnEn').classList.toggle('ring-2', lang === 'en');
+                document.getElementById('btnEn').classList.toggle('ring-blue-300', lang === 'en');
+            } else if (attempts > 0) {
+                setTimeout(() => tryTranslate(attempts - 1), 300);
+            }
+        };
+        tryTranslate(10);
+    }
 
     // ====== Theme ======
     function toggleTheme() {
