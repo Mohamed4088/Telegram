@@ -67,7 +67,7 @@
                        bg-gradient-to-r from-blue-500 to-cyan-500 text-white">
                 🌐 English
             </button>
-            <div id="google_translate_element" class="hidden absolute"></div>
+            <div id="google_translate_element" style="visibility:hidden; position:absolute;"></div>
         </div>
     </header>
 
@@ -437,22 +437,19 @@
 
     // ====== Translation ======
     function translatePage(lang) {
-        // Wait for Google Translate combo to be ready
-        const tryTranslate = (attempts) => {
-            const combo = document.querySelector('.goog-te-combo');
-            if (combo) {
-                combo.value = lang;
-                combo.dispatchEvent(new Event('change'));
-                // Update button active states
-                document.getElementById('btnAr').classList.toggle('opacity-60', lang !== 'ar');
-                document.getElementById('btnEn').classList.toggle('opacity-60', lang !== 'en');
-                document.getElementById('btnAr').classList.toggle('ring-2', lang === 'ar');
-                document.getElementById('btnAr').classList.toggle('ring-green-300', lang === 'ar');
-                document.getElementById('btnEn').classList.toggle('ring-2', lang === 'en');
-                document.getElementById('btnEn').classList.toggle('ring-blue-300', lang === 'en');
-            } else if (attempts > 0) {
-                setTimeout(() => tryTranslate(attempts - 1), 300);
-            }
+    const observer = new MutationObserver((mutations, obs) => {
+        const combo = document.querySelector('.goog-te-combo');
+        if (combo) {
+            combo.value = lang;
+            combo.dispatchEvent(new Event('change'));
+            obs.disconnect();
+            // تحديث شكل الأزرار...
+        }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    // بعد 4 ثواني لو مظهرش يوقف المراقبة
+    setTimeout(() => observer.disconnect(), 4000);
+    }
         };
         tryTranslate(10);
     }
