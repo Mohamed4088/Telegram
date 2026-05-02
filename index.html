@@ -1,132 +1,125 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📡 راديو القنوات | متقدم</title>
+    <title>📡 Channels Radio | Advanced</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: { extend: { fontFamily: { cairo: ['Cairo', 'sans-serif'] } } }
+            theme: { extend: { fontFamily: { roboto: ['Roboto', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'] } } }
         }
     </script>
     <style>
-        body { font-family: 'Cairo', sans-serif; }
-        .glass { backdrop-filter: blur(10px); background: rgba(255,255,255,0.8); }
-        .dark .glass { background: rgba(30,30,30,0.8); }
+        body { font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif; background-color: #f1f5f9; }
+        .dark body { background-color: #0f172a; }
+        .telegram-card { background: #ffffff; transition: all 0.2s ease; }
+        .dark .telegram-card { background: #1e293b; }
         .highlight { background: #fef08a; padding: 1px 3px; border-radius: 3px; }
         .dark .highlight { background: #854d0e; color: #fef3c7; }
         .fade-in { animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .type-badge { font-size: 0.7rem; padding: 2px 8px; border-radius: 9999px; font-weight: 700; }
+        .type-badge { font-size: 0.75rem; padding: 2px 10px; border-radius: 9999px; font-weight: 500; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-gray-950 text-slate-800 dark:text-gray-200 transition-colors duration-300 min-h-screen">
+<body class="text-slate-800 dark:text-gray-200 transition-colors duration-300 min-h-screen">
 
 <div class="max-w-4xl mx-auto p-4 md:p-6">
 
-    <!-- ===== Header ===== -->
     <header class="text-center mb-6">
-        <div class="inline-flex items-center gap-2 bg-gradient-to-l from-blue-600 to-cyan-500 text-white px-6 py-3 rounded-2xl shadow-lg mb-3">
+        <div class="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-6 py-3 rounded-2xl shadow-lg mb-3">
             <span class="text-2xl">📡</span>
-            <h1 class="text-xl font-black">راديو القنوات</h1>
+            <h1 class="text-xl font-bold">Channels Radio</h1>
         </div>
-        <p class="text-slate-500 dark:text-gray-400 text-sm" id="lastUpdate">آخر تحديث: جاري التحميل...</p>
-        <button id="themeBtn" onclick="toggleTheme()" class="mt-2 text-sm bg-slate-200 dark:bg-gray-800 px-4 py-2 rounded-xl hover:scale-105 transition-transform">
-            🌙 الوضع الداكن
+        <p class="text-slate-500 dark:text-gray-400 text-sm" id="lastUpdate">Last update: Loading...</p>
+        <button id="themeBtn" onclick="toggleTheme()" class="mt-2 text-sm bg-slate-200 dark:bg-slate-800 px-4 py-2 rounded-xl hover:scale-105 transition-transform font-medium">
+            🌙 Dark Mode
         </button>
     </header>
 
-    <!-- ===== Stats Cards ===== -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        <div class="glass rounded-2xl p-4 text-center shadow-sm border border-slate-100 dark:border-gray-800">
-            <div class="text-2xl font-black text-blue-600" id="statTotal">-</div>
-            <div class="text-xs text-slate-500">إجمالي البوستات</div>
+        <div class="telegram-card rounded-2xl p-4 text-center shadow-sm border border-slate-200 dark:border-slate-700">
+            <div class="text-2xl font-bold text-blue-500" id="statTotal">-</div>
+            <div class="text-xs text-slate-500 font-medium mt-1">Total Posts</div>
         </div>
-        <div class="glass rounded-2xl p-4 text-center shadow-sm border border-slate-100 dark:border-gray-800">
-            <div class="text-2xl font-black text-green-600" id="statChannels">-</div>
-            <div class="text-xs text-slate-500">القنوات</div>
+        <div class="telegram-card rounded-2xl p-4 text-center shadow-sm border border-slate-200 dark:border-slate-700">
+            <div class="text-2xl font-bold text-green-500" id="statChannels">-</div>
+            <div class="text-xs text-slate-500 font-medium mt-1">Channels</div>
         </div>
-        <div class="glass rounded-2xl p-4 text-center shadow-sm border border-slate-100 dark:border-gray-800">
-            <div class="text-2xl font-black text-orange-500" id="statMedia">-</div>
-            <div class="text-xs text-slate-500">ميديا</div>
+        <div class="telegram-card rounded-2xl p-4 text-center shadow-sm border border-slate-200 dark:border-slate-700">
+            <div class="text-2xl font-bold text-orange-400" id="statMedia">-</div>
+            <div class="text-xs text-slate-500 font-medium mt-1">Media Files</div>
         </div>
-        <div class="glass rounded-2xl p-4 text-center shadow-sm border border-slate-100 dark:border-gray-800">
-            <div class="text-2xl font-black text-purple-600" id="statFiltered">-</div>
-            <div class="text-xs text-slate-500">نتائج البحث</div>
+        <div class="telegram-card rounded-2xl p-4 text-center shadow-sm border border-slate-200 dark:border-slate-700">
+            <div class="text-2xl font-bold text-purple-500" id="statFiltered">-</div>
+            <div class="text-xs text-slate-500 font-medium mt-1">Search Results</div>
         </div>
     </div>
 
-    <!-- ===== Search & Filters ===== -->
-    <div class="glass rounded-2xl p-4 mb-4 shadow-sm border border-slate-100 dark:border-gray-800">
+    <div class="telegram-card rounded-2xl p-4 mb-4 shadow-sm border border-slate-200 dark:border-slate-700">
         <div class="flex gap-2 mb-3">
             <div class="flex-1 relative">
-                <input type="text" id="searchInput" placeholder="🔍 ابحث في كل البوستات..."
-                    class="w-full p-3 pr-10 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-900 outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all">
-                <span id="clearSearch" onclick="clearSearchInput()" class="absolute left-3 top-1/2 -translate-y-1/2 cursor-pointer text-slate-400 hover:text-red-500 hidden">✕</span>
+                <input type="text" id="searchInput" placeholder="🔍 Search all posts..."
+                    class="w-full p-3 pr-10 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all">
+                <span id="clearSearch" onclick="clearSearchInput()" class="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-slate-400 hover:text-red-500 hidden font-bold">✕</span>
             </div>
-            <button onclick="exportCSV()" class="bg-green-500 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-green-600 transition-all" title="تصدير CSV">📥</button>
+            <button onclick="exportCSV()" class="bg-green-500 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-green-600 transition-all shadow-sm" title="Export CSV">📥 CSV</button>
         </div>
         <div class="flex flex-wrap gap-2">
-            <select id="channelFilter" class="flex-1 min-w-[140px] p-2.5 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm outline-none">
-                <option value="all">📁 كل القنوات</option>
+            <select id="channelFilter" class="flex-1 min-w-[140px] p-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-sm outline-none font-medium">
+                <option value="all">📁 All Channels</option>
             </select>
-            <select id="typeFilter" class="p-2.5 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm outline-none">
-                <option value="all">🗂️ كل الأنواع</option>
-                <option value="text">📝 نصوص</option>
-                <option value="photo">🖼️ صور</option>
-                <option value="video">🎬 فيديو</option>
-                <option value="document">📎 ملفات</option>
-                <option value="voice">🎤 صوتي</option>
-                <option value="poll">📊 تصويت</option>
+            <select id="typeFilter" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-sm outline-none font-medium">
+                <option value="all">🗂️ All Types</option>
+                <option value="text">📝 Text</option>
+                <option value="photo">🖼️ Photo</option>
+                <option value="video">🎬 Video</option>
+                <option value="document">📎 Document</option>
+                <option value="voice">🎤 Voice</option>
+                <option value="poll">📊 Poll</option>
             </select>
-            <select id="sortFilter" class="p-2.5 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm outline-none">
-                <option value="newest">⬇️ الأحدث</option>
-                <option value="oldest">⬆️ الأقدم</option>
-                <option value="views">👁️ الأكثر مشاهدة</option>
-                <option value="reactions">❤️ الأكثر تفاعل</option>
+            <select id="sortFilter" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-sm outline-none font-medium">
+                <option value="newest">⬇️ Newest</option>
+                <option value="oldest">⬆️ Oldest</option>
+                <option value="views">👁️ Most Viewed</option>
+                <option value="reactions">❤️ Most Reacted</option>
             </select>
-            <input type="date" id="fromDate" class="p-2.5 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm outline-none" title="من تاريخ">
-            <input type="date" id="toDate" class="p-2.5 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm outline-none" title="إلى تاريخ">
+            <input type="date" id="fromDate" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-sm outline-none" title="From Date">
+            <input type="date" id="toDate" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-sm outline-none" title="To Date">
         </div>
-        <div id="activeFilters" class="flex flex-wrap gap-2 mt-3 hidden">
-            <span class="text-xs text-slate-500">الفلاتر النشطة:</span>
-            <div id="filterTags"></div>
-            <button onclick="resetAllFilters()" class="text-xs text-red-500 font-bold hover:underline">مسح الكل ✕</button>
+        <div id="activeFilters" class="flex flex-wrap items-center gap-2 mt-3 hidden">
+            <span class="text-xs text-slate-500 font-medium">Active Filters:</span>
+            <div id="filterTags" class="flex flex-wrap gap-1"></div>
+            <button onclick="resetAllFilters()" class="text-xs text-red-500 font-bold hover:underline ml-2">Clear All ✕</button>
         </div>
     </div>
 
-    <!-- ===== Hashtags Cloud ===== -->
-    <div id="hashtagsCloud" class="glass rounded-2xl p-3 mb-4 shadow-sm border border-slate-100 dark:border-gray-800 hidden">
-        <div class="text-xs text-slate-500 mb-2 font-bold"># هاشتاقات شائعة</div>
+    <div id="hashtagsCloud" class="telegram-card rounded-2xl p-4 mb-4 shadow-sm border border-slate-200 dark:border-slate-700 hidden">
+        <div class="text-xs text-slate-500 mb-3 font-bold uppercase tracking-wider"># Trending Hashtags</div>
         <div id="hashtagsList" class="flex flex-wrap gap-2"></div>
     </div>
 
-    <!-- ===== Posts Feed ===== -->
     <div id="feed" class="space-y-4"></div>
 
-    <!-- ===== Empty State ===== -->
     <div id="emptyState" class="text-center py-16 hidden">
-        <div class="text-5xl mb-4">🔍</div>
-        <h3 class="text-lg font-bold text-slate-500">مفيش نتائج</h3>
-        <p class="text-sm text-slate-400">جرب تغيّر كلمات البحث أو الفلاتر</p>
+        <div class="text-5xl mb-4 opacity-50">🔍</div>
+        <h3 class="text-lg font-bold text-slate-600 dark:text-slate-400">No results found</h3>
+        <p class="text-sm text-slate-500 mt-1">Try adjusting your search terms or filters.</p>
     </div>
 
-    <!-- ===== Load More ===== -->
     <div class="text-center mt-8 space-y-2">
-        <button id="loadMoreBtn" class="bg-gradient-to-l from-blue-600 to-cyan-500 text-white px-10 py-3 rounded-2xl font-bold hover:shadow-lg hover:scale-105 transition-all hidden" onclick="renderNextPage()">
-            تحميل المزيد ⬇️
+        <button id="loadMoreBtn" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-10 py-3 rounded-2xl font-bold hover:shadow-lg hover:scale-105 transition-all hidden shadow-md" onclick="renderNextPage()">
+            Load More ⬇️
         </button>
-        <div id="progressInfo" class="text-xs text-slate-400"></div>
+        <div id="progressInfo" class="text-xs text-slate-400 font-medium"></div>
     </div>
 
-    <!-- ===== Footer ===== -->
-    <footer class="text-center mt-10 mb-4 text-xs text-slate-400">
-        <p>⚡ يتم التحديث تلقائياً كل 6 ساعات عبر GitHub Actions</p>
+    <footer class="text-center mt-10 mb-4 text-xs text-slate-400 font-medium">
+        <p>⚡ Automatically updated every 6 hours via GitHub Actions</p>
     </footer>
 </div>
 
@@ -137,17 +130,17 @@
     const PAGE_SIZE = 15;
 
     const TYPE_CONFIG = {
-        text:       { icon: '📝', label: 'نص',    color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300' },
-        photo:      { icon: '🖼️', label: 'صورة',  color: 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300' },
-        video:      { icon: '🎬', label: 'فيديو', color: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300' },
-        document:   { icon: '📎', label: 'ملف',   color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300' },
-        pdf:        { icon: '📄', label: 'PDF',   color: 'bg-rose-100 text-rose-700 dark:bg-rose-900 dark:text-rose-300' },
-        voice:      { icon: '🎤', label: 'صوتي',  color: 'bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300' },
-        video_note: { icon: '⭕', label: 'دائري', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300' },
-        sticker:    { icon: '😀', label: 'ملصق',  color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300' },
-        poll:       { icon: '📊', label: 'تصويت', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' },
-        gif:        { icon: '🎞️', label: 'GIF',   color: 'bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300' },
-        location:   { icon: '📍', label: 'موقع',  color: 'bg-lime-100 text-lime-700 dark:bg-lime-900 dark:text-lime-300' },
+        text:       { icon: '📝', label: 'Text',     color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300' },
+        photo:      { icon: '🖼️', label: 'Photo',    color: 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300' },
+        video:      { icon: '🎬', label: 'Video',    color: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300' },
+        document:   { icon: '📎', label: 'File',     color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300' },
+        pdf:        { icon: '📄', label: 'PDF',      color: 'bg-rose-100 text-rose-700 dark:bg-rose-900 dark:text-rose-300' },
+        voice:      { icon: '🎤', label: 'Voice',    color: 'bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300' },
+        video_note: { icon: '⭕', label: 'VidNote',  color: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300' },
+        sticker:    { icon: '😀', label: 'Sticker',  color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300' },
+        poll:       { icon: '📊', label: 'Poll',     color: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' },
+        gif:        { icon: '🎞️', label: 'GIF',      color: 'bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300' },
+        location:   { icon: '📍', label: 'Location', color: 'bg-lime-100 text-lime-700 dark:bg-lime-900 dark:text-lime-300' },
     };
 
     // ====== Init ======
@@ -162,8 +155,8 @@
 
             if (statsRes && statsRes.ok) {
                 const stats = await statsRes.json();
-                const updateDate = new Date(stats.last_update).toLocaleString('ar-EG');
-                document.getElementById('lastUpdate').textContent = `آخر تحديث: ${updateDate} | الأرشيف: ${stats.total_posts} بوست`;
+                const updateDate = new Date(stats.last_update).toLocaleString('en-US');
+                document.getElementById('lastUpdate').textContent = `Last Update: ${updateDate} | Archive: ${stats.total_posts} posts`;
             }
 
             const channels = [...new Set(allPosts.map(p => p.channel))].sort();
@@ -180,7 +173,7 @@
             document.getElementById('feed').innerHTML = `
                 <div class="text-center py-16">
                     <div class="text-5xl mb-4">❌</div>
-                    <h3 class="text-lg font-bold text-red-500">خطأ في تحميل البيانات</h3>
+                    <h3 class="text-lg font-bold text-red-500">Error loading data</h3>
                     <p class="text-sm text-slate-400">${err.message}</p>
                 </div>`;
         }
@@ -203,8 +196,8 @@
 
         document.getElementById('hashtagsCloud').classList.remove('hidden');
         document.getElementById('hashtagsList').innerHTML = sorted.map(([tag, count]) =>
-            `<button onclick="searchByHashtag('${tag}')" class="text-xs bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full hover:bg-blue-100 dark:hover:bg-blue-800 transition-all font-bold">
-                #${tag} <span class="opacity-60">(${count})</span>
+            `<button onclick="searchByHashtag('${tag}')" class="text-xs bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 px-3 py-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-700 transition-all font-medium border border-slate-200 dark:border-slate-700">
+                #${tag} <span class="opacity-60 text-[10px] ml-1">${count}</span>
             </button>`
         ).join('');
     }
@@ -252,11 +245,11 @@
 
     function showActiveFilters(search, channel, type, fromDate, toDate) {
         const tags = [];
-        if (search) tags.push(`بحث: "${search}"`);
-        if (channel !== 'all') tags.push(`قناة: ${channel}`);
-        if (type !== 'all') tags.push(`نوع: ${TYPE_CONFIG[type]?.label || type}`);
-        if (fromDate) tags.push(`من: ${fromDate}`);
-        if (toDate) tags.push(`إلى: ${toDate}`);
+        if (search) tags.push(`Search: "${search}"`);
+        if (channel !== 'all') tags.push(`Channel: ${channel}`);
+        if (type !== 'all') tags.push(`Type: ${TYPE_CONFIG[type]?.label || type}`);
+        if (fromDate) tags.push(`From: ${fromDate}`);
+        if (toDate) tags.push(`To: ${toDate}`);
 
         const container = document.getElementById('activeFilters');
         const tagsDiv = document.getElementById('filterTags');
@@ -264,11 +257,17 @@
 
         container.classList.remove('hidden');
         tagsDiv.innerHTML = tags.map(t =>
-            `<span class="text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full">${t}</span>`
+            `<span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 px-2.5 py-1 rounded-md font-medium">${t}</span>`
         ).join('');
     }
 
     // ====== Render ======
+    function linkify(text) {
+        // Find URLs and convert them to anchor tags. Must run AFTER escapeHtml to not break HTML.
+        const urlPattern = /(\b(https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
+        return text.replace(urlPattern, '<a href="$1" target="_blank" class="text-blue-500 hover:underline break-all">$1</a>');
+    }
+
     function renderNextPage() {
         const container = document.getElementById('feed');
         const batch = filteredPosts.slice(currentIndex, currentIndex + PAGE_SIZE);
@@ -286,39 +285,53 @@
         batch.forEach((post) => {
             const date = new Date(post.date);
             const timeAgo = getTimeAgo(date);
-            const dateStr = date.toLocaleString('ar-EG');
+            const dateStr = date.toLocaleString('en-US');
             const typeInfo = TYPE_CONFIG[post.type] || TYPE_CONFIG.text;
 
+            // 1. Escape HTML
             let displayText = escapeHtml(post.text);
+            
+            // 2. Highlight Search Terms
             if (searchTerm) {
                 const regex = new RegExp(`(${escapeRegex(searchTerm)})`, 'gi');
                 displayText = displayText.replace(regex, '<span class="highlight">$1</span>');
             }
+            
+            // 3. Linkify and add line breaks
+            displayText = linkify(displayText);
             displayText = displayText.replace(/\n/g, '<br>');
 
             const card = document.createElement('div');
             card.className = 'fade-in';
             card.innerHTML = `
-                <div class="glass rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800 overflow-hidden hover:shadow-md transition-all">
+                <div class="telegram-card rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-md">
                     <div class="flex justify-between items-center px-5 pt-4 pb-2">
-                        <div class="flex items-center gap-2">
-                            <span class="text-lg">📢</span>
-                            <span class="text-sm font-bold text-blue-600 dark:text-blue-400">${post.channel}</span>
-                            <span class="type-badge ${typeInfo.color}">${typeInfo.icon} ${typeInfo.label}</span>
-                            ${post.is_forwarded ? '<span class="type-badge bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">🔄 محوّل</span>' : ''}
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-xl shadow-inner">
+                                📢
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-sm font-bold text-slate-900 dark:text-white leading-tight">${post.channel}</span>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span class="type-badge ${typeInfo.color}">${typeInfo.icon} ${typeInfo.label}</span>
+                                    ${post.is_forwarded ? '<span class="type-badge bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">🔄 Forwarded</span>' : ''}
+                                </div>
+                            </div>
                         </div>
-                        <div class="text-xs text-slate-400" title="${dateStr}">${timeAgo}</div>
+                        <div class="text-[11px] text-slate-400 font-medium whitespace-nowrap" title="${dateStr}">${timeAgo}</div>
                     </div>
-                    <div class="px-5 pb-2">
-                        <div class="text-sm leading-relaxed text-slate-700 dark:text-gray-300">${displayText}</div>
+                    <div class="px-5 pt-2 pb-4">
+                        <div class="text-[15px] leading-relaxed text-slate-800 dark:text-slate-200">${displayText}</div>
                     </div>
-                    <div class="flex justify-between items-center px-5 py-3 bg-slate-50 dark:bg-gray-900/50 text-xs text-slate-400">
+                    <div class="flex justify-between items-center px-5 py-3 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500 font-medium">
                         <div class="flex gap-4">
-                            ${post.views ? `<span>👁️ ${formatNum(post.views)}</span>` : ''}
-                            ${post.forwards ? `<span>🔄 ${formatNum(post.forwards)}</span>` : ''}
-                            ${post.reactions ? `<span>❤️ ${formatNum(post.reactions)}</span>` : ''}
+                            ${post.views ? `<span class="flex items-center gap-1">👁️ ${formatNum(post.views)}</span>` : ''}
+                            ${post.forwards ? `<span class="flex items-center gap-1">🔄 ${formatNum(post.forwards)}</span>` : ''}
+                            ${post.reactions ? `<span class="flex items-center gap-1">❤️ ${formatNum(post.reactions)}</span>` : ''}
                         </div>
-                        <a href="${post.link}" target="_blank" class="text-blue-500 font-bold hover:underline">فتح في تليجرام ↗</a>
+                        <a href="${post.link}" target="_blank" class="text-blue-500 hover:text-blue-600 font-bold transition-colors inline-flex items-center gap-1">
+                            Open in Telegram <span class="text-lg leading-none">↗</span>
+                        </a>
                     </div>
                 </div>`;
             container.appendChild(card);
@@ -326,17 +339,17 @@
 
         currentIndex += PAGE_SIZE;
         document.getElementById('loadMoreBtn').classList.toggle('hidden', currentIndex >= filteredPosts.length);
-        document.getElementById('progressInfo').textContent = `عرض ${Math.min(currentIndex, filteredPosts.length)} من ${filteredPosts.length}`;
+        document.getElementById('progressInfo').textContent = `Showing ${Math.min(currentIndex, filteredPosts.length)} of ${filteredPosts.length}`;
     }
 
     // ====== Helpers ======
     function getTimeAgo(date) {
         const diff = (Date.now() - date.getTime()) / 1000;
-        if (diff < 60) return 'الآن';
-        if (diff < 3600) return `منذ ${Math.floor(diff / 60)} دقيقة`;
-        if (diff < 86400) return `منذ ${Math.floor(diff / 3600)} ساعة`;
-        if (diff < 2592000) return `منذ ${Math.floor(diff / 86400)} يوم`;
-        return date.toLocaleDateString('ar-EG');
+        if (diff < 60) return 'Just now';
+        if (diff < 3600) return `${Math.floor(diff / 60)} mins ago`;
+        if (diff < 86400) return `${Math.floor(diff / 3600)} hrs ago`;
+        if (diff < 2592000) return `${Math.floor(diff / 86400)} days ago`;
+        return date.toLocaleDateString('en-US');
     }
 
     function formatNum(n) {
@@ -372,12 +385,12 @@
 
     // ====== Export CSV ======
     function exportCSV() {
-        const headers = ['القناة', 'النص', 'النوع', 'التاريخ', 'المشاهدات', 'التفاعلات', 'الرابط'];
+        const headers = ['Channel', 'Text', 'Type', 'Date', 'Views', 'Reactions', 'Link'];
         const rows = filteredPosts.map(p => [
             p.channel,
             `"${(p.text || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`,
             p.type,
-            new Date(p.date).toLocaleString('ar-EG'),
+            new Date(p.date).toLocaleString('en-US'),
             p.views || 0,
             p.reactions || 0,
             p.link
@@ -397,12 +410,12 @@
         document.documentElement.classList.toggle('dark');
         const isDark = document.documentElement.classList.contains('dark');
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        document.getElementById('themeBtn').textContent = isDark ? '☀️ الوضع الفاتح' : '🌙 الوضع الداكن';
+        document.getElementById('themeBtn').textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
     }
 
     if (localStorage.getItem('theme') === 'dark') {
         document.documentElement.classList.add('dark');
-        document.getElementById('themeBtn').textContent = '☀️ الوضع الفاتح';
+        document.getElementById('themeBtn').textContent = '☀️ Light Mode';
     }
 
     // ====== Events ======
