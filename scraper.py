@@ -12,7 +12,8 @@ SESSION_STRING = os.environ['SESSION_STRING']
 CHANNELS_LIST = os.environ.get('CHANNELS_LIST', '')
 
 # ====== الإعدادات ======
-POSTS_PER_CHANNEL = 50
+POSTS_PER_CHANNEL = 50   # حد أقصى لكل قناة لو القناة جديدة ومفيش بيانات قديمة
+TOTAL_LIMIT = 200        # الحد الأقصى للبوستات المحفوظة في data.json
 SLEEP_BETWEEN = 1.5
 DATA_FILE = 'data.json'
 STATS_FILE = 'stats.json'
@@ -67,46 +68,58 @@ def load_existing_posts():
                     return data
         except (json.JSONDecodeError, Exception) as e:
             print(f"⚠️ خطأ في قراءة الملف القديم: {e}")
-    
+
     print("📂 لا يوجد ملف قديم، سيتم إنشاء ملف جديد")
     return []
+
+
+def get_last_id_per_channel(posts):
+    """
+    آخر post ID محفوظ لكل قناة
+    بيتستخدم كـ min_id عشان نسحب بس الجديد
+    """
+    last_ids = {}
+    for post in posts:
+        ch = post.get('channel', '')
+        pid = post.get('id', 0)
+        if ch not in last_ids or pid > last_ids[ch]:
+            last_ids[ch] = pid
+    return last_ids
 
 
 def merge_posts(old_posts, new_posts):
     """
     دمج البوستات القديمة مع الجديدة بدون تكرار
-    المفتاح الفريد = channel + id (رقم البوست في القناة)
-    لو البوست موجود قبل كده → يتم تحديث بياناته (مشاهدات، تفاعلات...)
-    لو بوست جديد → يتم إضافته
+    المفتاح الفريد = channel + id
+    لو البوست موجود → يتحدث (مشاهدات، تفاعلات...)
+    لو بوست جديد → يتضاف
+    في النهاية بيحتفظ بأحدث TOTAL_LIMIT بوست فقط
     """
-    # إنشاء index من البوستات القديمة
     posts_map = {}
     for post in old_posts:
         key = f"{post.get('channel', '')}_{post.get('id', '')}"
         posts_map[key] = post
 
-    # إضافة/تحديث البوستات الجديدة
     new_count = 0
     updated_count = 0
     for post in new_posts:
         key = f"{post.get('channel', '')}_{post.get('id', '')}"
         if key in posts_map:
-            # تحديث البيانات المتغيرة (مشاهدات، تفاعلات)
             posts_map[key]['views'] = post.get('views', 0)
             posts_map[key]['forwards'] = post.get('forwards', 0)
             posts_map[key]['reactions'] = post.get('reactions', 0)
             updated_count += 1
         else:
-            # بوست جديد
             posts_map[key] = post
             new_count += 1
 
     print(f"  🆕 بوستات جديدة: {new_count}")
     print(f"  🔄 بوستات محدّثة: {updated_count}")
 
-    # تحويل لـ list وترتيب بالأحدث
+    # رتب بالأحدث واحتفظ بـ TOTAL_LIMIT بس
     merged = list(posts_map.values())
     merged.sort(key=lambda x: x.get('date', ''), reverse=True)
+    merged = merged[:TOTAL_LIMIT]
 
     return merged
 
@@ -114,6 +127,15 @@ def merge_posts(old_posts, new_posts):
 async def main():
     client = TelegramClient(StringSession(SESSION_STRING), API_ID, API_HASH)
     await client.start()
+
+    # تحميل البيانات القديمة وعمل index بآخر ID لكل قناة
+    old_posts = load_existing_posts()
+    last_ids = get_last_id_per_channel(old_posts)
+
+    if last_ids:
+        print(f"🔖 عندنا بيانات قديمة لـ {len(last_ids)} قناة، هنسحب الجديد فقط")
+    else:
+        print(f"🆕 أول رانة، هنسحب آخر {POSTS_PER_CHANNEL} بوست من كل قناة")
 
     new_posts = []
     channel_stats = {}
@@ -144,9 +166,20 @@ async def main():
             username = getattr(entity, 'username', None)
             count = 0
 
-            print(f"  ⏳ جاري سحب بوستات: {channel_title}...")
+            # لو عندنا آخر ID للقناة دي → اسحب الجديد بس
+            # لو قناة جديدة → اسحب آخر POSTS_PER_CHANNEL
+            min_id = last_ids.get(channel_title, 0)
 
-            async for message in client.iter_messages(entity, limit=POSTS_PER_CHANNEL):
+            if min_id > 0:
+                print(f"  ⏳ {channel_title}: سحب الجديد بعد ID {min_id}...")
+            else:
+                print(f"  ⏳ {channel_title}: قناة جديدة، سحب آخر {POSTS_PER_CHANNEL} بوست...")
+
+            async for message in client.iter_messages(
+                entity,
+                min_id=min_id,
+                limit=POSTS_PER_CHANNEL  # حماية من قنوات فيها ألاف البوستات الجديدة
+            ):
                 if username:
                     post_link = f"https://t.me/{username}/{message.id}"
                 else:
@@ -182,8 +215,12 @@ async def main():
                 })
                 count += 1
 
+            if count == 0:
+                print(f"  ✅ {channel_title}: مفيش بوستات جديدة")
+            else:
+                print(f"  ✅ {channel_title}: {count} بوست جديد")
+
             channel_stats[channel_title] = count
-            print(f"  ✅ {channel_title}: {count} بوست")
             await asyncio.sleep(SLEEP_BETWEEN)
 
         except Exception as e:
@@ -192,13 +229,12 @@ async def main():
 
     # ====== الدمج مع البيانات القديمة ======
     print("\n📦 جاري دمج البيانات...")
-    old_posts = load_existing_posts()
     merged_posts = merge_posts(old_posts, new_posts)
 
     print(f"\n📊 الإحصائيات:")
     print(f"  📂 البوستات القديمة: {len(old_posts)}")
     print(f"  📥 البوستات المسحوبة: {len(new_posts)}")
-    print(f"  📚 الإجمالي بعد الدمج: {len(merged_posts)}")
+    print(f"  📚 الإجمالي بعد الدمج: {len(merged_posts)} (حد أقصى {TOTAL_LIMIT})")
 
     # حفظ البوستات
     with open(DATA_FILE, 'w', encoding='utf-8') as f:
