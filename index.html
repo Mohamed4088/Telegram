@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📡 Channels Radio | Advanced</title>
+    <title>📡 Channels Radio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <script type="text/javascript">
@@ -16,7 +16,6 @@
         }
     </script>
     <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -30,46 +29,50 @@
         .dark .telegram-card { background: #1e293b; }
         .highlight { background: #fef08a; padding: 1px 3px; border-radius: 3px; }
         .dark .highlight { background: #854d0e; color: #fef3c7; }
-        .fade-in { animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         .type-badge { font-size: 0.70rem; padding: 2px 8px; border-radius: 9999px; font-weight: 500; }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
         .goog-te-banner-frame.skiptranslate { display: none !important; }
         body { top: 0px !important; }
-        .goog-te-gadget { font-family: Roboto, sans-serif !important; font-size: 0 !important; }
+        .goog-te-gadget { font-size: 0 !important; }
         .goog-te-gadget .goog-te-combo { font-size: 14px !important; padding: 4px; border-radius: 8px; outline: none; border: 1px solid #cbd5e1; background: white; color: #1e293b; }
         .dark .goog-te-gadget .goog-te-combo { background: #1e293b; color: white; border-color: #334155; }
+        .page-btn { transition: all 0.15s; }
+        .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+        .page-btn:not(:disabled):hover { transform: scale(1.05); }
     </style>
 </head>
 <body class="text-slate-800 dark:text-gray-200 transition-colors duration-300 min-h-screen">
 
 <div class="max-w-4xl mx-auto p-2 md:p-4">
 
+    <!-- Header -->
     <header class="text-center mb-3 notranslate">
         <div class="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-5 py-2 rounded-2xl shadow-md mb-2">
             <span class="text-xl">📡</span>
             <h1 class="text-lg font-bold">Channels Radio</h1>
         </div>
-        <p class="text-slate-500 dark:text-gray-400 text-[11px]" id="lastUpdate">Last update: Loading...</p>
+        <p class="text-slate-500 dark:text-gray-400 text-[11px]" id="lastUpdate">Loading...</p>
         <div class="flex justify-center gap-2 mt-2 items-center flex-wrap">
-            <button id="themeBtn" onclick="toggleTheme()" class="text-xs bg-slate-200 dark:bg-slate-800 px-3 py-1.5 rounded-xl transition-all font-medium hover:scale-105">
+            <button id="themeBtn" onclick="toggleTheme()"
+                class="text-xs bg-slate-200 dark:bg-slate-800 px-3 py-1.5 rounded-xl font-medium hover:scale-105 transition-all">
                 🌙 Dark
             </button>
-            <button onclick="translatePage('ar')" id="btnAr"
-                class="translate-btn text-xs font-bold px-3 py-1.5 rounded-xl transition-all hover:scale-105 shadow-sm
-                       bg-gradient-to-r from-green-500 to-emerald-500 text-white">
+            <button onclick="translatePage('ar')"
+                class="text-xs font-bold px-3 py-1.5 rounded-xl hover:scale-105 transition-all shadow-sm bg-gradient-to-r from-green-500 to-emerald-500 text-white">
                 🌐 عربي
             </button>
-            <button onclick="translatePage('en')" id="btnEn"
-                class="translate-btn text-xs font-bold px-3 py-1.5 rounded-xl transition-all hover:scale-105 shadow-sm
-                       bg-gradient-to-r from-blue-500 to-cyan-500 text-white">
+            <button onclick="translatePage('en')"
+                class="text-xs font-bold px-3 py-1.5 rounded-xl hover:scale-105 transition-all shadow-sm bg-gradient-to-r from-blue-500 to-cyan-500 text-white">
                 🌐 English
             </button>
-            <div id="google_translate_element" style="visibility:hidden; position:absolute;"></div>
+            <div id="google_translate_element" style="visibility:hidden;position:absolute;"></div>
         </div>
     </header>
 
+    <!-- Stats -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3 notranslate">
         <div class="telegram-card rounded-xl p-3 text-center shadow-sm border border-slate-200 dark:border-slate-700">
             <div class="text-xl font-bold text-blue-500" id="statTotal">-</div>
@@ -89,12 +92,14 @@
         </div>
     </div>
 
+    <!-- Filters -->
     <div class="telegram-card rounded-xl p-3 mb-3 shadow-sm border border-slate-200 dark:border-slate-700 notranslate">
         <div class="flex gap-2 mb-2">
             <div class="flex-1 relative">
                 <input type="text" id="searchInput" placeholder="🔍 Search all posts..."
                     class="w-full p-2.5 pr-8 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all">
-                <span id="clearSearch" onclick="clearSearchInput()" class="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-slate-400 hover:text-red-500 hidden font-bold text-xs">✕</span>
+                <span id="clearSearch" onclick="clearSearchInput()"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-slate-400 hover:text-red-500 hidden font-bold text-xs">✕</span>
             </div>
         </div>
         <div class="flex flex-wrap gap-2">
@@ -107,6 +112,7 @@
                 <option value="photo">🖼️ Photo</option>
                 <option value="video">🎬 Video</option>
                 <option value="document">📎 Document</option>
+                <option value="pdf">📄 PDF</option>
                 <option value="voice">🎤 Voice</option>
                 <option value="poll">📊 Poll</option>
             </select>
@@ -122,6 +128,7 @@
         </div>
     </div>
 
+    <!-- Hashtags -->
     <div id="hashtagsCloud" class="telegram-card rounded-xl p-3 mb-3 shadow-sm border border-slate-200 dark:border-slate-700 hidden notranslate">
         <div class="flex justify-between items-center mb-2">
             <div class="text-[11px] text-slate-500 font-bold uppercase tracking-wider"># Trending Hashtags</div>
@@ -132,6 +139,30 @@
         </div>
     </div>
 
+    <!-- Archive Page Navigation (top) -->
+    <div id="archiveNavTop" class="telegram-card rounded-xl p-3 mb-3 shadow-sm border border-slate-200 dark:border-slate-700 hidden notranslate">
+        <div class="flex items-center justify-between gap-2">
+            <button id="prevPageBtnTop" onclick="loadArchivePage(currentArchivePage - 1)"
+                class="page-btn bg-blue-500 text-white px-4 py-1.5 rounded-lg text-xs font-bold shadow-sm">
+                ◀ Newer
+            </button>
+            <div class="text-center">
+                <div class="text-xs font-bold text-slate-700 dark:text-slate-200" id="pageInfoTop">Page 1 of 1</div>
+                <div class="text-[10px] text-slate-400 mt-0.5" id="pageRangeTop"></div>
+            </div>
+            <button id="nextPageBtnTop" onclick="loadArchivePage(currentArchivePage + 1)"
+                class="page-btn bg-slate-500 text-white px-4 py-1.5 rounded-lg text-xs font-bold shadow-sm">
+                Older ▶
+            </button>
+        </div>
+    </div>
+
+    <!-- Feed -->
+    <div id="loadingIndicator" class="text-center py-8 hidden notranslate">
+        <div class="text-2xl animate-pulse">⏳</div>
+        <p class="text-xs text-slate-400 mt-2">Loading posts...</p>
+    </div>
+
     <div id="feed" class="space-y-3"></div>
 
     <div id="emptyState" class="text-center py-10 hidden notranslate">
@@ -139,65 +170,78 @@
         <h3 class="text-sm font-bold text-slate-600 dark:text-slate-400">No results found</h3>
     </div>
 
-    <div class="text-center mt-6 space-y-2 notranslate">
-        <button id="loadMoreBtn" class="bg-blue-500 text-white px-8 py-2.5 rounded-xl text-sm font-bold shadow-md hidden" onclick="renderNextPage()">
+    <!-- Load More (within page) -->
+    <div class="text-center mt-4 space-y-2 notranslate">
+        <button id="loadMoreBtn" class="bg-blue-500 text-white px-8 py-2.5 rounded-xl text-sm font-bold shadow-md hidden" onclick="renderNextBatch()">
             Load More ⬇️
         </button>
         <div id="progressInfo" class="text-[11px] text-slate-400 font-medium"></div>
     </div>
+
+    <!-- Archive Page Navigation (bottom) -->
+    <div id="archiveNavBottom" class="telegram-card rounded-xl p-3 mt-4 shadow-sm border border-slate-200 dark:border-slate-700 hidden notranslate">
+        <div class="flex items-center justify-between gap-2">
+            <button id="prevPageBtnBottom" onclick="loadArchivePage(currentArchivePage - 1)"
+                class="page-btn bg-blue-500 text-white px-4 py-1.5 rounded-lg text-xs font-bold shadow-sm">
+                ◀ Newer
+            </button>
+            <div class="text-center">
+                <div class="text-xs font-bold text-slate-700 dark:text-slate-200" id="pageInfoBottom">Page 1 of 1</div>
+                <div class="text-[10px] text-slate-400 mt-0.5" id="pageRangeBottom"></div>
+            </div>
+            <button id="nextPageBtnBottom" onclick="loadArchivePage(currentArchivePage + 1)"
+                class="page-btn bg-slate-500 text-white px-4 py-1.5 rounded-lg text-xs font-bold shadow-sm">
+                Older ▶
+            </button>
+        </div>
+    </div>
+
 </div>
 
+<!-- Toast -->
 <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-4 py-2 rounded-full opacity-0 transition-opacity duration-300 pointer-events-none z-50 shadow-lg text-sm font-bold notranslate">
     📋 Link Copied!
 </div>
 
 <script>
-    let allPosts = [];
-    let filteredPosts = [];
-    let currentIndex = 0;
-    const PAGE_SIZE = 15;
-    let isHashtagsVisible = false;
+    // ====== State ======
+    let allPosts          = [];   // البوستات المحملة من الصفحة الحالية
+    let filteredPosts     = [];
+    let currentBatchIndex = 0;
+    let currentArchivePage = 1;
+    let totalArchivePages  = 1;
+    let perPage            = 200;
+    let isHashtagsVisible  = false;
+    const BATCH_SIZE = 15;
 
     const TYPE_CONFIG = {
-        text:       { icon: '📝', label: 'Text',     color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300' },
-        photo:      { icon: '🖼️', label: 'Photo',    color: 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300' },
-        video:      { icon: '🎬', label: 'Video',    color: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300' },
-        document:   { icon: '📎', label: 'File',     color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300' },
-        voice:      { icon: '🎤', label: 'Voice',    color: 'bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300' },
-        poll:       { icon: '📊', label: 'Poll',     color: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' },
-        pdf:        { icon: '📄', label: 'PDF',      color: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300' },
-        video_note: { icon: '⭕', label: 'Video Note',color: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300' },
-        sticker:    { icon: '🎭', label: 'Sticker',  color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300' },
-        location:   { icon: '📍', label: 'Location', color: 'bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300' },
-        contact:    { icon: '👤', label: 'Contact',  color: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' },
+        text:       { icon: '📝', label: 'Text',       color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300' },
+        photo:      { icon: '🖼️', label: 'Photo',      color: 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300' },
+        video:      { icon: '🎬', label: 'Video',      color: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300' },
+        document:   { icon: '📎', label: 'File',       color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300' },
+        pdf:        { icon: '📄', label: 'PDF',        color: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300' },
+        voice:      { icon: '🎤', label: 'Voice',      color: 'bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300' },
+        poll:       { icon: '📊', label: 'Poll',       color: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' },
+        video_note: { icon: '⭕', label: 'Video Note', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300' },
+        sticker:    { icon: '🎭', label: 'Sticker',    color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300' },
+        location:   { icon: '📍', label: 'Location',   color: 'bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300' },
+        contact:    { icon: '👤', label: 'Contact',    color: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' },
     };
 
     // ====== Init ======
     async function init() {
         try {
-            const [postsRes, statsRes] = await Promise.all([
-                fetch('data.json'),
-                fetch('stats.json').catch(() => null)
-            ]);
-
-            if (!postsRes.ok) throw new Error('data.json not found');
-            allPosts = await postsRes.json();
-
+            const statsRes = await fetch('stats.json').catch(() => null);
             if (statsRes && statsRes.ok) {
                 const stats = await statsRes.json();
-                const updateDate = new Date(stats.last_update).toLocaleString('en-US');
-                document.getElementById('lastUpdate').textContent = `Update: ${updateDate} | Total: ${stats.total_posts}`;
+                totalArchivePages = stats.total_pages || 1;
+                perPage           = stats.per_page    || 200;
+                const updateDate  = new Date(stats.last_update).toLocaleString('en-US');
+                document.getElementById('lastUpdate').textContent =
+                    `Updated: ${updateDate} | Archive: ${stats.total_posts} posts | ${totalArchivePages} pages`;
             }
 
-            const channels = [...new Set(allPosts.map(p => p.channel))].sort();
-            channels.forEach(ch => {
-                const count = allPosts.filter(p => p.channel === ch).length;
-                document.getElementById('channelFilter').add(new Option(`${ch} (${count})`, ch));
-            });
-
-            buildHashtagsCloud();
-            updateStats();
-            applyFilters();
+            await loadArchivePage(1);
             setupLongPressEvents();
         } catch (err) {
             document.getElementById('feed').innerHTML = `
@@ -209,10 +253,80 @@
         }
     }
 
+    // ====== Archive Page Loader ======
+    async function loadArchivePage(page) {
+        if (page < 1 || page > totalArchivePages) return;
+
+        showLoading(true);
+        try {
+            const res = await fetch(`data_page_${page}.json`);
+            if (!res.ok) throw new Error(`data_page_${page}.json not found`);
+            allPosts           = await res.json();
+            currentArchivePage = page;
+
+            // بعد أول تحميل نبني الـ channel filter من كل الصفحات (بس لو صفحة 1)
+            if (page === 1) {
+                await buildChannelFilter();
+                buildHashtagsCloud();
+            }
+
+            updateStats();
+            updateArchiveNav();
+            applyFilters();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } catch (err) {
+            document.getElementById('feed').innerHTML = `
+                <div class="text-center py-6">
+                    <p class="text-sm text-red-500 font-bold">⚠️ ${err.message}</p>
+                </div>`;
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    async function buildChannelFilter() {
+        // نبني قائمة القنوات من الصفحة الأولى بس (كافية للفلترة)
+        const select = document.getElementById('channelFilter');
+        // امسح الخيارات القديمة ما عدا "All"
+        while (select.options.length > 1) select.remove(1);
+
+        const channels = [...new Set(allPosts.map(p => p.channel))].sort();
+        channels.forEach(ch => {
+            const count = allPosts.filter(p => p.channel === ch).length;
+            select.add(new Option(`${ch} (${count})`, ch));
+        });
+    }
+
+    function updateArchiveNav() {
+        const show = totalArchivePages > 1;
+        ['archiveNavTop', 'archiveNavBottom'].forEach(id => {
+            document.getElementById(id).classList.toggle('hidden', !show);
+        });
+        if (!show) return;
+
+        const startPost = (currentArchivePage - 1) * perPage + 1;
+        const endPost   = Math.min(currentArchivePage * perPage, totalArchivePages * perPage);
+        const pageText  = `Page ${currentArchivePage} of ${totalArchivePages}`;
+        const rangeText = `Posts ${startPost}–${endPost}`;
+
+        ['Top', 'Bottom'].forEach(suffix => {
+            document.getElementById(`pageInfo${suffix}`).textContent  = pageText;
+            document.getElementById(`pageRange${suffix}`).textContent = rangeText;
+            document.getElementById(`prevPageBtn${suffix}`).disabled  = currentArchivePage === 1;
+            document.getElementById(`nextPageBtn${suffix}`).disabled  = currentArchivePage === totalArchivePages;
+        });
+    }
+
+    function showLoading(state) {
+        document.getElementById('loadingIndicator').classList.toggle('hidden', !state);
+        document.getElementById('feed').classList.toggle('hidden', state);
+    }
+
+    // ====== Stats ======
     function updateStats() {
-        document.getElementById('statTotal').textContent = allPosts.length;
+        document.getElementById('statTotal').textContent    = allPosts.length;
         document.getElementById('statChannels').textContent = new Set(allPosts.map(p => p.channel)).size;
-        document.getElementById('statMedia').textContent = allPosts.filter(p => p.has_media).length;
+        document.getElementById('statMedia').textContent    = allPosts.filter(p => p.has_media).length;
     }
 
     // ====== Hashtags ======
@@ -224,7 +338,8 @@
 
         document.getElementById('hashtagsCloud').classList.remove('hidden');
         document.getElementById('hashtagsList').innerHTML = sorted.map(([tag, count]) =>
-            `<button onclick="searchByHashtag('${tag}')" class="text-[10px] bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-md hover:bg-blue-50 transition-all font-medium border border-slate-200 dark:border-slate-700">
+            `<button onclick="searchByHashtag('${tag}')"
+                class="text-[10px] bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-md hover:bg-blue-50 transition-all font-medium border border-slate-200 dark:border-slate-700">
                 #${tag} <span class="opacity-60 ml-0.5">${count}</span>
             </button>`
         ).join('');
@@ -243,25 +358,25 @@
 
     // ====== Filters ======
     function applyFilters() {
-        const search = document.getElementById('searchInput').value.toLowerCase().trim();
+        const search  = document.getElementById('searchInput').value.toLowerCase().trim();
         const channel = document.getElementById('channelFilter').value;
-        const type = document.getElementById('typeFilter').value;
-        const sort = document.getElementById('sortFilter').value;
+        const type    = document.getElementById('typeFilter').value;
+        const sort    = document.getElementById('sortFilter').value;
 
         document.getElementById('clearSearch').classList.toggle('hidden', !search);
 
         filteredPosts = allPosts.filter(p => {
             const text = (p.text || '').toLowerCase();
             const ch   = (p.channel || '').toLowerCase();
-            if (search && !text.includes(search) && !ch.includes(search)) return false;
-            if (channel !== 'all' && p.channel !== channel) return false;
-            if (type !== 'all' && p.type !== type) return false;
+            if (search  && !text.includes(search) && !ch.includes(search)) return false;
+            if (channel !== 'all' && p.channel !== channel)                 return false;
+            if (type    !== 'all' && p.type    !== type)                    return false;
             return true;
         });
 
         switch (sort) {
             case 'oldest': filteredPosts.sort((a, b) => new Date(a.date) - new Date(b.date)); break;
-            case 'views':  filteredPosts.sort((a, b) => (b.views || 0) - (a.views || 0)); break;
+            case 'views':  filteredPosts.sort((a, b) => (b.views || 0) - (a.views || 0));    break;
             default:       filteredPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
         }
 
@@ -269,89 +384,75 @@
 
         const tagsDiv = document.getElementById('filterTags');
         tagsDiv.innerHTML = '';
-        if (search)         tagsDiv.innerHTML += `<span class="text-[10px] bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded">"${search}"</span>`;
+        if (search)            tagsDiv.innerHTML += `<span class="text-[10px] bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded">"${search}"</span>`;
         if (channel !== 'all') tagsDiv.innerHTML += `<span class="text-[10px] bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded">${channel}</span>`;
         document.getElementById('activeFilters').classList.toggle('hidden', !search && channel === 'all');
 
-        currentIndex = 0;
+        currentBatchIndex = 0;
         document.getElementById('feed').innerHTML = '';
-        renderNextPage();
+        renderNextBatch();
     }
 
-    // ====== Render & Text Processing ======
+    // ====== Render ======
     function linkify(text) {
-        const urlPattern = /(\b(https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
-        return text.replace(urlPattern, '<a href="$1" target="_blank" class="text-blue-500 hover:underline break-all notranslate telegram-link" data-url="$1">$1</a>');
+        return text.replace(
+            /(\b(https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim,
+            '<a href="$1" target="_blank" class="text-blue-500 hover:underline break-all notranslate telegram-link" data-url="$1">$1</a>'
+        );
     }
 
     function processText(rawText, searchTerm) {
         if (!rawText) return { visible: '', hidden: '', isTruncated: false };
-
-        let isTruncated = false;
-        let visibleText = rawText;
-        let hiddenText = '';
-
+        let visibleText = rawText, hiddenText = '', isTruncated = false;
         if (rawText.length > 250) {
-            let breakpoint = rawText.lastIndexOf(' ', 250);
-            if (breakpoint === -1) breakpoint = 250;
-            visibleText = rawText.slice(0, breakpoint);
-            hiddenText  = rawText.slice(breakpoint);
+            let bp = rawText.lastIndexOf(' ', 250);
+            if (bp === -1) bp = 250;
+            visibleText = rawText.slice(0, bp);
+            hiddenText  = rawText.slice(bp);
             isTruncated = true;
         }
-
         const format = (str) => {
-            let formatted = escapeHtml(str);
-            if (searchTerm) {
-                const regex = new RegExp(`(${escapeRegex(searchTerm)})`, 'gi');
-                formatted = formatted.replace(regex, '<span class="highlight">$1</span>');
-            }
-            formatted = linkify(formatted);
-            return formatted.replace(/\n/g, '<br>');
+            let f = escapeHtml(str);
+            if (searchTerm) f = f.replace(new RegExp(`(${escapeRegex(searchTerm)})`, 'gi'), '<span class="highlight">$1</span>');
+            return linkify(f).replace(/\n/g, '<br>');
         };
-
         return { visible: format(visibleText), hidden: format(hiddenText), isTruncated };
     }
 
     function toggleReadMore(btn) {
-        const parent = btn.parentElement;
-        const hiddenSpan = parent.querySelector('.content-hidden');
-        if (hiddenSpan.classList.contains('hidden')) {
-            hiddenSpan.classList.remove('hidden');
-            btn.textContent = ' Show Less';
-        } else {
-            hiddenSpan.classList.add('hidden');
-            btn.textContent = '... Read More';
-        }
+        const hidden = btn.parentElement.querySelector('.content-hidden');
+        const collapsed = hidden.classList.contains('hidden');
+        hidden.classList.toggle('hidden', !collapsed);
+        btn.textContent = collapsed ? ' Show Less' : '... Read More';
     }
 
-    function renderNextPage() {
+    function renderNextBatch() {
         const container = document.getElementById('feed');
-        const batch = filteredPosts.slice(currentIndex, currentIndex + PAGE_SIZE);
+        const batch     = filteredPosts.slice(currentBatchIndex, currentBatchIndex + BATCH_SIZE);
 
-        if (currentIndex === 0 && batch.length === 0) {
+        if (currentBatchIndex === 0 && batch.length === 0) {
             document.getElementById('emptyState').classList.remove('hidden');
             document.getElementById('loadMoreBtn').classList.add('hidden');
+            document.getElementById('progressInfo').textContent = '';
             return;
         }
         document.getElementById('emptyState').classList.add('hidden');
 
         const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
 
-        batch.forEach((post) => {
-            const date = new Date(post.date);
-            const typeInfo = TYPE_CONFIG[post.type] || TYPE_CONFIG.text;
-            const textContent = processText(post.text, searchTerm);
+        batch.forEach(post => {
+            const date      = new Date(post.date);
+            const typeInfo  = TYPE_CONFIG[post.type] || TYPE_CONFIG.text;
+            const textData  = processText(post.text, searchTerm);
 
-            let htmlContent = `<span class="content-visible">${textContent.visible}</span>`;
-            if (textContent.isTruncated) {
-                htmlContent += `<span class="content-hidden hidden">${textContent.hidden}</span>
-                                <button onclick="toggleReadMore(this)" class="text-blue-500 font-bold text-xs ml-1 notranslate">... Read More</button>`;
+            let htmlContent = `<span class="content-visible">${textData.visible}</span>`;
+            if (textData.isTruncated) {
+                htmlContent += `<span class="content-hidden hidden">${textData.hidden}</span>
+                    <button onclick="toggleReadMore(this)" class="text-blue-500 font-bold text-xs ml-1 notranslate">... Read More</button>`;
             }
 
-            // بادج "Forwarded" لو البوست منقول
-            const forwardedBadge = post.is_forwarded
-                ? `<span class="text-[10px] text-slate-400 italic">↩ Forwarded</span>`
-                : '';
+            const forwardBadge = post.is_forwarded
+                ? `<span class="text-[10px] text-slate-400 italic ml-1">↩ Fwd</span>` : '';
 
             const card = document.createElement('div');
             card.className = 'fade-in';
@@ -359,12 +460,12 @@
                 <div class="telegram-card rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
                     <div class="flex justify-between items-center px-4 pt-3 pb-2 notranslate">
                         <div class="flex items-center gap-2">
-                            <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-sm">📢</div>
+                            <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-sm">📢</div>
                             <div class="flex flex-col">
                                 <span class="text-[13px] font-bold leading-tight">${escapeHtml(post.channel)}</span>
                                 <div class="flex items-center gap-1 mt-0.5">
                                     <span class="type-badge ${typeInfo.color}">${typeInfo.icon} ${typeInfo.label}</span>
-                                    ${forwardedBadge}
+                                    ${forwardBadge}
                                 </div>
                             </div>
                         </div>
@@ -375,58 +476,52 @@
                     </div>
                     <div class="flex justify-between items-center px-4 py-2 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 notranslate">
                         <div class="flex gap-3">
-                            ${post.views    ? `<span>👁️ ${formatNum(post.views)}</span>`    : ''}
-                            ${post.forwards ? `<span>↩ ${formatNum(post.forwards)}</span>` : ''}
-                            ${post.reactions? `<span>❤️ ${formatNum(post.reactions)}</span>`: ''}
+                            ${post.views     ? `<span>👁️ ${formatNum(post.views)}</span>`    : ''}
+                            ${post.forwards  ? `<span>↩ ${formatNum(post.forwards)}</span>`  : ''}
+                            ${post.reactions ? `<span>❤️ ${formatNum(post.reactions)}</span>` : ''}
                         </div>
-                        <a href="${post.link}" target="_blank" class="text-blue-500 font-bold telegram-link" data-url="${post.link}">Open ↗</a>
+                        <a href="${post.link}" target="_blank"
+                            class="text-blue-500 font-bold telegram-link" data-url="${post.link}">Open ↗</a>
                     </div>
                 </div>`;
             container.appendChild(card);
         });
 
-        currentIndex += PAGE_SIZE;
-        document.getElementById('loadMoreBtn').classList.toggle('hidden', currentIndex >= filteredPosts.length);
-        document.getElementById('progressInfo').textContent = `Showing ${Math.min(currentIndex, filteredPosts.length)} of ${filteredPosts.length}`;
+        currentBatchIndex += BATCH_SIZE;
+        const remaining = filteredPosts.length - currentBatchIndex;
+        document.getElementById('loadMoreBtn').classList.toggle('hidden', remaining <= 0);
+        document.getElementById('progressInfo').textContent =
+            `Showing ${Math.min(currentBatchIndex, filteredPosts.length)} of ${filteredPosts.length}`;
     }
 
     // ====== Long Press to Copy ======
-    let pressTimer;
-    let isLongPress = false;
+    let pressTimer, isLongPress = false;
 
     function showToast() {
-        const toast = document.getElementById('toast');
-        toast.classList.remove('opacity-0');
-        toast.classList.add('opacity-100');
-        setTimeout(() => {
-            toast.classList.remove('opacity-100');
-            toast.classList.add('opacity-0');
-        }, 2000);
+        const t = document.getElementById('toast');
+        t.classList.replace('opacity-0', 'opacity-100');
+        setTimeout(() => t.classList.replace('opacity-100', 'opacity-0'), 2000);
     }
 
     function setupLongPressEvents() {
         const feed = document.getElementById('feed');
-
-        const startPress = (e) => {
+        const start = (e) => {
             const target = e.target.closest('.telegram-link');
             if (!target) return;
             isLongPress = false;
-            pressTimer = setTimeout(() => {
+            pressTimer  = setTimeout(() => {
                 isLongPress = true;
-                navigator.clipboard.writeText(target.dataset.url).then(() => showToast());
+                navigator.clipboard.writeText(target.dataset.url).then(showToast);
             }, 500);
         };
-
-        const cancelPress = () => clearTimeout(pressTimer);
-
-        feed.addEventListener('mousedown', startPress);
-        feed.addEventListener('touchstart', startPress, { passive: true });
-        feed.addEventListener('mouseup', cancelPress);
-        feed.addEventListener('mouseleave', cancelPress);
-        feed.addEventListener('touchend', cancelPress);
+        const cancel = () => clearTimeout(pressTimer);
+        feed.addEventListener('mousedown',  start);
+        feed.addEventListener('touchstart', start, { passive: true });
+        feed.addEventListener('mouseup',    cancel);
+        feed.addEventListener('mouseleave', cancel);
+        feed.addEventListener('touchend',   cancel);
         feed.addEventListener('click', (e) => {
-            const target = e.target.closest('.telegram-link');
-            if (target && isLongPress) e.preventDefault();
+            if (e.target.closest('.telegram-link') && isLongPress) e.preventDefault();
         });
     }
 
@@ -437,15 +532,15 @@
         if (n >= 1000)    return (n / 1000).toFixed(1) + 'K';
         return n.toString();
     }
-    function escapeHtml(str) {
-        return str ? str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
+    function escapeHtml(s) {
+        return s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : '';
     }
-    function escapeRegex(str) { return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+    function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
     function clearSearchInput() { document.getElementById('searchInput').value = ''; applyFilters(); }
     function resetAllFilters() {
-        document.getElementById('searchInput').value = '';
+        document.getElementById('searchInput').value    = '';
         document.getElementById('channelFilter').value = 'all';
-        document.getElementById('typeFilter').value = 'all';
+        document.getElementById('typeFilter').value    = 'all';
         applyFilters();
     }
 
