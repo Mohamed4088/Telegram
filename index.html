@@ -5,52 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>📡 راديو القنوات | متقدم</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Roboto', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Helvetica', 'Arial', 'sans-serif'],
-                    },
-                }
-            }
+            theme: { extend: { fontFamily: { cairo: ['Cairo', 'sans-serif'] } } }
         }
     </script>
     <style>
-        body { 
-            font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; 
-            letter-spacing: 0.2px;
-        }
+        body { font-family: 'Cairo', sans-serif; }
         .glass { backdrop-filter: blur(10px); background: rgba(255,255,255,0.8); }
         .dark .glass { background: rgba(30,30,30,0.8); }
-        .post-text { font-size: 15px; } /* حجم خط مشابه لتليجرام */
-        .post-text.clamped { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
-        .highlight { background: #fef08a; padding: 1px 3px; border-radius: 3px; color: #000; }
+        .highlight { background: #fef08a; padding: 1px 3px; border-radius: 3px; }
         .dark .highlight { background: #854d0e; color: #fef3c7; }
         .fade-in { animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .type-badge { font-size: 0.7rem; padding: 2px 8px; border-radius: 9999px; font-weight: 700; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
-        
-        /* تنسيق الروابط داخل البوست */
-        .post-link {
-            color: #3b82f6;
-            text-decoration: none;
-            word-break: break-all;
-            transition: all 0.2s;
-        }
-        .post-link:hover { text-decoration: underline; color: #2563eb; }
-        .dark .post-link { color: #60a5fa; }
-        .dark .post-link:hover { color: #93c5fd; }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-gray-950 text-slate-800 dark:text-gray-200 transition-colors duration-300 min-h-screen">
 
 <div class="max-w-4xl mx-auto p-4 md:p-6">
 
+    <!-- ===== Header ===== -->
     <header class="text-center mb-6">
         <div class="inline-flex items-center gap-2 bg-gradient-to-l from-blue-600 to-cyan-500 text-white px-6 py-3 rounded-2xl shadow-lg mb-3">
             <span class="text-2xl">📡</span>
@@ -62,7 +41,8 @@
         </button>
     </header>
 
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6" id="statsGrid">
+    <!-- ===== Stats Cards ===== -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         <div class="glass rounded-2xl p-4 text-center shadow-sm border border-slate-100 dark:border-gray-800">
             <div class="text-2xl font-black text-blue-600" id="statTotal">-</div>
             <div class="text-xs text-slate-500">إجمالي البوستات</div>
@@ -81,6 +61,7 @@
         </div>
     </div>
 
+    <!-- ===== Search & Filters ===== -->
     <div class="glass rounded-2xl p-4 mb-4 shadow-sm border border-slate-100 dark:border-gray-800">
         <div class="flex gap-2 mb-3">
             <div class="flex-1 relative">
@@ -88,11 +69,8 @@
                     class="w-full p-3 pr-10 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-900 outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all">
                 <span id="clearSearch" onclick="clearSearchInput()" class="absolute left-3 top-1/2 -translate-y-1/2 cursor-pointer text-slate-400 hover:text-red-500 hidden">✕</span>
             </div>
-            <button onclick="exportCSV()" class="bg-green-500 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-green-600 transition-all" title="تصدير CSV">
-                📥
-            </button>
+            <button onclick="exportCSV()" class="bg-green-500 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-green-600 transition-all" title="تصدير CSV">📥</button>
         </div>
-
         <div class="flex flex-wrap gap-2">
             <select id="channelFilter" class="flex-1 min-w-[140px] p-2.5 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm outline-none">
                 <option value="all">📁 كل القنوات</option>
@@ -105,7 +83,6 @@
                 <option value="document">📎 ملفات</option>
                 <option value="voice">🎤 صوتي</option>
                 <option value="poll">📊 تصويت</option>
-                <option value="forwarded">🔄 محوّل</option>
             </select>
             <select id="sortFilter" class="p-2.5 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm outline-none">
                 <option value="newest">⬇️ الأحدث</option>
@@ -116,7 +93,6 @@
             <input type="date" id="fromDate" class="p-2.5 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm outline-none" title="من تاريخ">
             <input type="date" id="toDate" class="p-2.5 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm outline-none" title="إلى تاريخ">
         </div>
-
         <div id="activeFilters" class="flex flex-wrap gap-2 mt-3 hidden">
             <span class="text-xs text-slate-500">الفلاتر النشطة:</span>
             <div id="filterTags"></div>
@@ -124,19 +100,23 @@
         </div>
     </div>
 
+    <!-- ===== Hashtags Cloud ===== -->
     <div id="hashtagsCloud" class="glass rounded-2xl p-3 mb-4 shadow-sm border border-slate-100 dark:border-gray-800 hidden">
         <div class="text-xs text-slate-500 mb-2 font-bold"># هاشتاقات شائعة</div>
         <div id="hashtagsList" class="flex flex-wrap gap-2"></div>
     </div>
 
+    <!-- ===== Posts Feed ===== -->
     <div id="feed" class="space-y-4"></div>
 
+    <!-- ===== Empty State ===== -->
     <div id="emptyState" class="text-center py-16 hidden">
         <div class="text-5xl mb-4">🔍</div>
         <h3 class="text-lg font-bold text-slate-500">مفيش نتائج</h3>
         <p class="text-sm text-slate-400">جرب تغيّر كلمات البحث أو الفلاتر</p>
     </div>
 
+    <!-- ===== Load More ===== -->
     <div class="text-center mt-8 space-y-2">
         <button id="loadMoreBtn" class="bg-gradient-to-l from-blue-600 to-cyan-500 text-white px-10 py-3 rounded-2xl font-bold hover:shadow-lg hover:scale-105 transition-all hidden" onclick="renderNextPage()">
             تحميل المزيد ⬇️
@@ -144,30 +124,30 @@
         <div id="progressInfo" class="text-xs text-slate-400"></div>
     </div>
 
+    <!-- ===== Footer ===== -->
     <footer class="text-center mt-10 mb-4 text-xs text-slate-400">
         <p>⚡ يتم التحديث تلقائياً كل 6 ساعات عبر GitHub Actions</p>
     </footer>
 </div>
 
 <script>
-    // ====== State ======
     let allPosts = [];
     let filteredPosts = [];
     let currentIndex = 0;
     const PAGE_SIZE = 15;
 
-    // ====== Type Config ======
     const TYPE_CONFIG = {
-        text:      { icon: '📝', label: 'نص',    color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300' },
-        photo:     { icon: '🖼️', label: 'صورة',  color: 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300' },
-        video:     { icon: '🎬', label: 'فيديو', color: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300' },
-        document:  { icon: '📎', label: 'ملف',   color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300' },
-        voice:     { icon: '🎤', label: 'صوتي',  color: 'bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300' },
-        video_note:{ icon: '⭕', label: 'دائري', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300' },
-        sticker:   { icon: '😀', label: 'ملصق',  color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300' },
-        poll:      { icon: '📊', label: 'تصويت', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' },
-        gif:       { icon: '🎞️', label: 'GIF',   color: 'bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300' },
-        forwarded: { icon: '🔄', label: 'محوّل',  color: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300' },
+        text:       { icon: '📝', label: 'نص',    color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300' },
+        photo:      { icon: '🖼️', label: 'صورة',  color: 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300' },
+        video:      { icon: '🎬', label: 'فيديو', color: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300' },
+        document:   { icon: '📎', label: 'ملف',   color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300' },
+        pdf:        { icon: '📄', label: 'PDF',   color: 'bg-rose-100 text-rose-700 dark:bg-rose-900 dark:text-rose-300' },
+        voice:      { icon: '🎤', label: 'صوتي',  color: 'bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300' },
+        video_note: { icon: '⭕', label: 'دائري', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300' },
+        sticker:    { icon: '😀', label: 'ملصق',  color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300' },
+        poll:       { icon: '📊', label: 'تصويت', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' },
+        gif:        { icon: '🎞️', label: 'GIF',   color: 'bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300' },
+        location:   { icon: '📍', label: 'موقع',  color: 'bg-lime-100 text-lime-700 dark:bg-lime-900 dark:text-lime-300' },
     };
 
     // ====== Init ======
@@ -180,27 +160,20 @@
 
             allPosts = await postsRes.json();
 
-            // Load stats
             if (statsRes && statsRes.ok) {
                 const stats = await statsRes.json();
-                document.getElementById('lastUpdate').textContent =
-                    `آخر تحديث: ${new Date(stats.last_update).toLocaleString('ar-EG')}`;
+                const updateDate = new Date(stats.last_update).toLocaleString('ar-EG');
+                document.getElementById('lastUpdate').textContent = `آخر تحديث: ${updateDate} | الأرشيف: ${stats.total_posts} بوست`;
             }
 
-            // Populate channel filter
             const channels = [...new Set(allPosts.map(p => p.channel))].sort();
             channels.forEach(ch => {
                 const count = allPosts.filter(p => p.channel === ch).length;
                 document.getElementById('channelFilter').add(new Option(`${ch} (${count})`, ch));
             });
 
-            // Build hashtags cloud
             buildHashtagsCloud();
-
-            // Update stats
             updateStats();
-
-            // Render
             applyFilters();
 
         } catch (err) {
@@ -213,32 +186,24 @@
         }
     }
 
-    // ====== Stats ======
     function updateStats() {
         document.getElementById('statTotal').textContent = allPosts.length;
-        document.getElementById('statChannels').textContent =
-            new Set(allPosts.map(p => p.channel)).size;
-        document.getElementById('statMedia').textContent =
-            allPosts.filter(p => p.has_media || p.type !== 'text').length;
+        document.getElementById('statChannels').textContent = new Set(allPosts.map(p => p.channel)).size;
+        document.getElementById('statMedia').textContent = allPosts.filter(p => p.type !== 'text').length;
     }
 
-    // ====== Hashtags Cloud ======
+    // ====== Hashtags ======
     function buildHashtagsCloud() {
         const tagCount = {};
         allPosts.forEach(p => {
-            (p.hashtags || []).forEach(t => {
-                tagCount[t] = (tagCount[t] || 0) + 1;
-            });
+            (p.hashtags || []).forEach(t => { tagCount[t] = (tagCount[t] || 0) + 1; });
         });
-
         const sorted = Object.entries(tagCount).sort((a, b) => b[1] - a[1]).slice(0, 15);
-
         if (sorted.length === 0) return;
 
         document.getElementById('hashtagsCloud').classList.remove('hidden');
         document.getElementById('hashtagsList').innerHTML = sorted.map(([tag, count]) =>
-            `<button onclick="searchByHashtag('${tag}')"
-                class="text-xs bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full hover:bg-blue-100 dark:hover:bg-blue-800 transition-all font-bold">
+            `<button onclick="searchByHashtag('${tag}')" class="text-xs bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full hover:bg-blue-100 dark:hover:bg-blue-800 transition-all font-bold">
                 #${tag} <span class="opacity-60">(${count})</span>
             </button>`
         ).join('');
@@ -258,54 +223,28 @@
         const fromDate = document.getElementById('fromDate').value;
         const toDate = document.getElementById('toDate').value;
 
-        // Toggle clear button
         document.getElementById('clearSearch').classList.toggle('hidden', !search);
 
         filteredPosts = allPosts.filter(p => {
-            // Search
-            if (search && !p.text.toLowerCase().includes(search) &&
-                !p.channel.toLowerCase().includes(search)) return false;
-
-            // Channel
+            if (search && !p.text.toLowerCase().includes(search) && !p.channel.toLowerCase().includes(search)) return false;
             if (channel !== 'all' && p.channel !== channel) return false;
-
-            // Type
-            if (type !== 'all') {
-                if (type === 'forwarded') {
-                    if (!p.is_forwarded) return false;
-                } else if (p.type !== type) return false;
-            }
-
-            // Date Range
+            if (type !== 'all' && p.type !== type) return false;
             const postDate = p.date.split('T')[0];
             if (fromDate && postDate < fromDate) return false;
             if (toDate && postDate > toDate) return false;
-
             return true;
         });
 
-        // Sort
         switch (sort) {
-            case 'oldest':
-                filteredPosts.sort((a, b) => new Date(a.date) - new Date(b.date));
-                break;
-            case 'views':
-                filteredPosts.sort((a, b) => (b.views || 0) - (a.views || 0));
-                break;
-            case 'reactions':
-                filteredPosts.sort((a, b) => (b.reactions || 0) - (a.reactions || 0));
-                break;
-            default:
-                filteredPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
+            case 'oldest':    filteredPosts.sort((a, b) => new Date(a.date) - new Date(b.date)); break;
+            case 'views':     filteredPosts.sort((a, b) => (b.views || 0) - (a.views || 0)); break;
+            case 'reactions': filteredPosts.sort((a, b) => (b.reactions || 0) - (a.reactions || 0)); break;
+            default:          filteredPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
         }
 
-        // Update filtered stat
         document.getElementById('statFiltered').textContent = filteredPosts.length;
-
-        // Show active filters
         showActiveFilters(search, channel, type, fromDate, toDate);
 
-        // Render
         currentIndex = 0;
         document.getElementById('feed').innerHTML = '';
         renderNextPage();
@@ -321,11 +260,7 @@
 
         const container = document.getElementById('activeFilters');
         const tagsDiv = document.getElementById('filterTags');
-
-        if (tags.length === 0) {
-            container.classList.add('hidden');
-            return;
-        }
+        if (tags.length === 0) { container.classList.add('hidden'); return; }
 
         container.classList.remove('hidden');
         tagsDiv.innerHTML = tags.map(t =>
@@ -338,7 +273,6 @@
         const container = document.getElementById('feed');
         const batch = filteredPosts.slice(currentIndex, currentIndex + PAGE_SIZE);
 
-        // Empty state
         if (currentIndex === 0 && batch.length === 0) {
             document.getElementById('emptyState').classList.remove('hidden');
             document.getElementById('loadMoreBtn').classList.add('hidden');
@@ -349,28 +283,18 @@
 
         const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
 
-        batch.forEach((post, i) => {
+        batch.forEach((post) => {
             const date = new Date(post.date);
             const timeAgo = getTimeAgo(date);
             const dateStr = date.toLocaleString('ar-EG');
             const typeInfo = TYPE_CONFIG[post.type] || TYPE_CONFIG.text;
 
             let displayText = escapeHtml(post.text);
-
-            // تحويل الروابط إلى Hyperlinks (يتم تطبيقها أولاً)
-            const urlRegex = /(https?:\/\/[^\s]+)/g;
-            displayText = displayText.replace(urlRegex, url => `<a href="${url}" target="_blank" class="post-link" dir="ltr" rel="noopener noreferrer">${url}</a>`);
-
-            // تظليل النص المبحوث عنه مع تجاهل محتوى وسوم HTML لعدم كسر الروابط
             if (searchTerm) {
-                const regex = new RegExp(`(${escapeRegex(searchTerm)})(?![^<]*>|[^<>]*<\/a>)`, 'gi');
+                const regex = new RegExp(`(${escapeRegex(searchTerm)})`, 'gi');
                 displayText = displayText.replace(regex, '<span class="highlight">$1</span>');
             }
-            
-            // تحويل الأسطر الجديدة لـ HTML
             displayText = displayText.replace(/\n/g, '<br>');
-
-            const postId = `post-${currentIndex + i}`;
 
             const card = document.createElement('div');
             card.className = 'fade-in';
@@ -385,57 +309,27 @@
                         </div>
                         <div class="text-xs text-slate-400" title="${dateStr}">${timeAgo}</div>
                     </div>
-
                     <div class="px-5 pb-2">
-                        <div id="${postId}" class="post-text clamped leading-relaxed text-slate-700 dark:text-gray-300">
-                            ${displayText}
-                        </div>
-                        <button onclick="toggleExpand('${postId}', this)" class="text-xs text-blue-500 font-bold mt-1 hover:underline expand-btn">عرض المزيد ↓</button>
+                        <div class="text-sm leading-relaxed text-slate-700 dark:text-gray-300">${displayText}</div>
                     </div>
-
                     <div class="flex justify-between items-center px-5 py-3 bg-slate-50 dark:bg-gray-900/50 text-xs text-slate-400">
                         <div class="flex gap-4">
                             ${post.views ? `<span>👁️ ${formatNum(post.views)}</span>` : ''}
                             ${post.forwards ? `<span>🔄 ${formatNum(post.forwards)}</span>` : ''}
                             ${post.reactions ? `<span>❤️ ${formatNum(post.reactions)}</span>` : ''}
                         </div>
-                        <a href="${post.link}" target="_blank"
-                           class="text-blue-500 font-bold hover:underline flex items-center gap-1">
-                            فتح في تليجرام ↗
-                        </a>
+                        <a href="${post.link}" target="_blank" class="text-blue-500 font-bold hover:underline">فتح في تليجرام ↗</a>
                     </div>
-                </div>
-            `;
-
+                </div>`;
             container.appendChild(card);
         });
 
         currentIndex += PAGE_SIZE;
-
-        // Load more button
-        const hasMore = currentIndex < filteredPosts.length;
-        document.getElementById('loadMoreBtn').classList.toggle('hidden', !hasMore);
-        document.getElementById('progressInfo').textContent =
-            `عرض ${Math.min(currentIndex, filteredPosts.length)} من ${filteredPosts.length}`;
-
-        // Check expand buttons
-        setTimeout(checkExpandButtons, 100);
+        document.getElementById('loadMoreBtn').classList.toggle('hidden', currentIndex >= filteredPosts.length);
+        document.getElementById('progressInfo').textContent = `عرض ${Math.min(currentIndex, filteredPosts.length)} من ${filteredPosts.length}`;
     }
 
     // ====== Helpers ======
-    function toggleExpand(id, btn) {
-        const el = document.getElementById(id);
-        el.classList.toggle('clamped');
-        btn.textContent = el.classList.contains('clamped') ? 'عرض المزيد ↓' : 'عرض أقل ↑';
-    }
-
-    function checkExpandButtons() {
-        document.querySelectorAll('.post-text.clamped').forEach(el => {
-            const btn = el.parentElement.querySelector('.expand-btn');
-            if (btn) btn.classList.toggle('hidden', el.scrollHeight <= el.clientHeight + 5);
-        });
-    }
-
     function getTimeAgo(date) {
         const diff = (Date.now() - date.getTime()) / 1000;
         if (diff < 60) return 'الآن';
@@ -488,11 +382,9 @@
             p.reactions || 0,
             p.link
         ]);
-
         const csv = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
-
         const a = document.createElement('a');
         a.href = url;
         a.download = `telegram_posts_${new Date().toISOString().split('T')[0]}.csv`;
@@ -508,30 +400,23 @@
         document.getElementById('themeBtn').textContent = isDark ? '☀️ الوضع الفاتح' : '🌙 الوضع الداكن';
     }
 
-    // Load saved theme
     if (localStorage.getItem('theme') === 'dark') {
         document.documentElement.classList.add('dark');
         document.getElementById('themeBtn').textContent = '☀️ الوضع الفاتح';
     }
 
-    // ====== Event Listeners ======
+    // ====== Events ======
     let debounceTimer;
     document.getElementById('searchInput').addEventListener('input', () => {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(applyFilters, 300);
     });
 
-    ['channelFilter', 'typeFilter', 'sortFilter'].forEach(id => {
+    ['channelFilter', 'typeFilter', 'sortFilter', 'fromDate', 'toDate'].forEach(id => {
         document.getElementById(id).addEventListener('change', applyFilters);
     });
 
-    ['fromDate', 'toDate'].forEach(id => {
-        document.getElementById(id).addEventListener('change', applyFilters);
-    });
-
-    // ====== Start ======
     init();
 </script>
-
 </body>
 </html>
