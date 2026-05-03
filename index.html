@@ -11,7 +11,8 @@
             new google.translate.TranslateElement({
                 pageLanguage: 'en',
                 includedLanguages: 'ar,en',
-                layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false
             }, 'google_translate_element');
         }
     </script>
@@ -68,29 +69,9 @@
                 class="text-xs font-bold px-3 py-1.5 rounded-xl hover:scale-105 transition-all shadow-sm bg-gradient-to-r from-blue-500 to-cyan-500 text-white">
                 🌐 English
             </button>
-            <div id="google_translate_element" style="visibility:hidden;position:absolute;"></div>
+            <div id="google_translate_element" style="visibility:hidden;position:absolute;height:0;width:0;overflow:hidden;"></div>
         </div>
     </header>
-
-    <!-- Stats -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3 notranslate">
-        <div class="telegram-card rounded-xl p-3 text-center shadow-sm border border-slate-200 dark:border-slate-700">
-            <div class="text-xl font-bold text-blue-500" id="statTotal">-</div>
-            <div class="text-[10px] text-slate-500 font-medium mt-1">Total Posts</div>
-        </div>
-        <div class="telegram-card rounded-xl p-3 text-center shadow-sm border border-slate-200 dark:border-slate-700">
-            <div class="text-xl font-bold text-green-500" id="statChannels">-</div>
-            <div class="text-[10px] text-slate-500 font-medium mt-1">Channels</div>
-        </div>
-        <div class="telegram-card rounded-xl p-3 text-center shadow-sm border border-slate-200 dark:border-slate-700">
-            <div class="text-xl font-bold text-orange-400" id="statMedia">-</div>
-            <div class="text-[10px] text-slate-500 font-medium mt-1">Media</div>
-        </div>
-        <div class="telegram-card rounded-xl p-3 text-center shadow-sm border border-slate-200 dark:border-slate-700">
-            <div class="text-xl font-bold text-purple-500" id="statFiltered">-</div>
-            <div class="text-[10px] text-slate-500 font-medium mt-1">Results</div>
-        </div>
-    </div>
 
     <!-- Filters -->
     <div class="telegram-card rounded-xl p-3 mb-3 shadow-sm border border-slate-200 dark:border-slate-700 notranslate">
@@ -157,7 +138,7 @@
         </div>
     </div>
 
-    <!-- Feed -->
+    <!-- Feed (Will be translated) -->
     <div id="loadingIndicator" class="text-center py-8 hidden notranslate">
         <div class="text-2xl animate-pulse">⏳</div>
         <p class="text-xs text-slate-400 mt-2">Loading posts...</p>
@@ -205,7 +186,7 @@
 
 <script>
     // ====== State ======
-    let allPosts          = [];   // البوستات المحملة من الصفحة الحالية
+    let allPosts          = [];
     let filteredPosts     = [];
     let currentBatchIndex = 0;
     let currentArchivePage = 1;
@@ -264,13 +245,11 @@
             allPosts           = await res.json();
             currentArchivePage = page;
 
-            // بعد أول تحميل نبني الـ channel filter من كل الصفحات (بس لو صفحة 1)
             if (page === 1) {
                 await buildChannelFilter();
                 buildHashtagsCloud();
             }
 
-            updateStats();
             updateArchiveNav();
             applyFilters();
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -285,9 +264,7 @@
     }
 
     async function buildChannelFilter() {
-        // نبني قائمة القنوات من الصفحة الأولى بس (كافية للفلترة)
         const select = document.getElementById('channelFilter');
-        // امسح الخيارات القديمة ما عدا "All"
         while (select.options.length > 1) select.remove(1);
 
         const channels = [...new Set(allPosts.map(p => p.channel))].sort();
@@ -320,13 +297,6 @@
     function showLoading(state) {
         document.getElementById('loadingIndicator').classList.toggle('hidden', !state);
         document.getElementById('feed').classList.toggle('hidden', state);
-    }
-
-    // ====== Stats ======
-    function updateStats() {
-        document.getElementById('statTotal').textContent    = allPosts.length;
-        document.getElementById('statChannels').textContent = new Set(allPosts.map(p => p.channel)).size;
-        document.getElementById('statMedia').textContent    = allPosts.filter(p => p.has_media).length;
     }
 
     // ====== Hashtags ======
@@ -379,8 +349,6 @@
             case 'views':  filteredPosts.sort((a, b) => (b.views || 0) - (a.views || 0));    break;
             default:       filteredPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
         }
-
-        document.getElementById('statFiltered').textContent = filteredPosts.length;
 
         const tagsDiv = document.getElementById('filterTags');
         tagsDiv.innerHTML = '';
@@ -550,7 +518,8 @@
             if (attempts <= 0) return;
             const combo = document.querySelector('.goog-te-combo');
             if (combo) {
-                combo.value = lang;
+                // To revert to original (English), setting value to empty string works
+                combo.value = lang === 'en' ? '' : lang;
                 combo.dispatchEvent(new Event('change'));
             } else {
                 setTimeout(() => trySet(attempts - 1), 400);
