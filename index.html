@@ -1,556 +1,125 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📡 Channels Radio</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <script type="text/javascript">
-        function googleTranslateElementInit() {
-            new google.translate.TranslateElement({
-                pageLanguage: 'en',
-                includedLanguages: 'ar,en',
-                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-                autoDisplay: false
-            }, 'google_translate_element');
-        }
-    </script>
-    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: { extend: { fontFamily: { roboto: ['Roboto', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'] } } }
-        }
-    </script>
-    <style>
-        body { font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif; background-color: #f1f5f9; }
-        .dark body { background-color: #0f172a; }
-        .telegram-card { background: #ffffff; transition: all 0.2s ease; }
-        .dark .telegram-card { background: #1e293b; }
-        .highlight { background: #fef08a; padding: 1px 3px; border-radius: 3px; }
-        .dark .highlight { background: #854d0e; color: #fef3c7; }
-        .fade-in { animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        .type-badge { font-size: 0.70rem; padding: 2px 8px; border-radius: 9999px; font-weight: 500; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
-        .goog-te-banner-frame.skiptranslate { display: none !important; }
-        body { top: 0px !important; }
-        .goog-te-gadget { font-size: 0 !important; }
-        .goog-te-gadget .goog-te-combo { font-size: 14px !important; padding: 4px; border-radius: 8px; outline: none; border: 1px solid #cbd5e1; background: white; color: #1e293b; }
-        .dark .goog-te-gadget .goog-te-combo { background: #1e293b; color: white; border-color: #334155; }
-        .page-btn { transition: all 0.15s; }
-        .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-        .page-btn:not(:disabled):hover { transform: scale(1.05); }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📡 Channels Radio</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      fontFamily: {
+        roboto: ['Roboto','-apple-system','BlinkMacSystemFont','sans-serif']
+      }
+    }
+  }
+}
+</script>
+
+<style>
+body { font-family: 'Roboto'; background:#f1f5f9 }
+.dark body { background:#0f172a }
+.telegram-card { background:#fff }
+.dark .telegram-card { background:#1e293b }
+.highlight { background:#fef08a; padding:1px 3px; border-radius:3px }
+.dark .highlight { background:#854d0e; color:#fef3c7 }
+</style>
 </head>
-<body class="text-slate-800 dark:text-gray-200 transition-colors duration-300 min-h-screen">
 
-<div class="max-w-4xl mx-auto p-2 md:p-4">
+<body class="text-slate-800 dark:text-gray-200">
 
-    <!-- Header -->
-    <header class="text-center mb-3 notranslate">
-        <div class="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-5 py-2 rounded-2xl shadow-md mb-2">
-            <span class="text-xl">📡</span>
-            <h1 class="text-lg font-bold">Channels Radio</h1>
-        </div>
-        <p class="text-slate-500 dark:text-gray-400 text-[11px]" id="lastUpdate">Loading...</p>
-        <div class="flex justify-center gap-2 mt-2 items-center flex-wrap">
-            <button id="themeBtn" onclick="toggleTheme()"
-                class="text-xs bg-slate-200 dark:bg-slate-800 px-3 py-1.5 rounded-xl font-medium hover:scale-105 transition-all">
-                🌙 Dark
-            </button>
-            <button onclick="translatePage('ar')"
-                class="text-xs font-bold px-3 py-1.5 rounded-xl hover:scale-105 transition-all shadow-sm bg-gradient-to-r from-green-500 to-emerald-500 text-white">
-                🌐 عربي
-            </button>
-            <button onclick="translatePage('en')"
-                class="text-xs font-bold px-3 py-1.5 rounded-xl hover:scale-105 transition-all shadow-sm bg-gradient-to-r from-blue-500 to-cyan-500 text-white">
-                🌐 English
-            </button>
-            <div id="google_translate_element" style="visibility:hidden;position:absolute;height:0;width:0;overflow:hidden;"></div>
-        </div>
-    </header>
+<div class="max-w-4xl mx-auto p-4">
 
-    <!-- Filters -->
-    <div class="telegram-card rounded-xl p-3 mb-3 shadow-sm border border-slate-200 dark:border-slate-700 notranslate">
-        <div class="flex gap-2 mb-2">
-            <div class="flex-1 relative">
-                <input type="text" id="searchInput" placeholder="🔍 Search all posts..."
-                    class="w-full p-2.5 pr-8 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all">
-                <span id="clearSearch" onclick="clearSearchInput()"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-slate-400 hover:text-red-500 hidden font-bold text-xs">✕</span>
-            </div>
-        </div>
-        <div class="flex flex-wrap gap-2">
-            <select id="channelFilter" class="flex-1 min-w-[120px] p-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-xs outline-none font-medium">
-                <option value="all">📁 All Channels</option>
-            </select>
-            <select id="typeFilter" class="p-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-xs outline-none font-medium">
-                <option value="all">🗂️ All Types</option>
-                <option value="text">📝 Text</option>
-                <option value="photo">🖼️ Photo</option>
-                <option value="video">🎬 Video</option>
-                <option value="document">📎 Document</option>
-                <option value="pdf">📄 PDF</option>
-                <option value="voice">🎤 Voice</option>
-                <option value="poll">📊 Poll</option>
-            </select>
-            <select id="sortFilter" class="p-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-xs outline-none font-medium">
-                <option value="newest">⬇️ Newest</option>
-                <option value="oldest">⬆️ Oldest</option>
-                <option value="views">👁️ Views</option>
-            </select>
-        </div>
-        <div id="activeFilters" class="flex flex-wrap items-center gap-1 mt-2 hidden">
-            <div id="filterTags" class="flex flex-wrap gap-1"></div>
-            <button onclick="resetAllFilters()" class="text-[10px] text-red-500 font-bold ml-1">Clear ✕</button>
-        </div>
-    </div>
+<header class="text-center mb-4 notranslate">
+<h1 class="text-lg font-bold">📡 Channels Radio</h1>
 
-    <!-- Hashtags -->
-    <div id="hashtagsCloud" class="telegram-card rounded-xl p-3 mb-3 shadow-sm border border-slate-200 dark:border-slate-700 hidden notranslate">
-        <div class="flex justify-between items-center mb-2">
-            <div class="text-[11px] text-slate-500 font-bold uppercase tracking-wider"># Trending Hashtags</div>
-            <button id="toggleHashtagsBtn" onclick="toggleHashtags()" class="text-xs text-blue-500 font-bold hover:underline">👁️ Show</button>
-        </div>
-        <div id="hashtagsListContainer" class="hidden">
-            <div id="hashtagsList" class="flex flex-wrap gap-1.5 mt-2"></div>
-        </div>
-    </div>
-
-    <!-- Archive Page Navigation (top) -->
-    <div id="archiveNavTop" class="telegram-card rounded-xl p-3 mb-3 shadow-sm border border-slate-200 dark:border-slate-700 hidden notranslate">
-        <div class="flex items-center justify-between gap-2">
-            <button id="prevPageBtnTop" onclick="loadArchivePage(currentArchivePage - 1)"
-                class="page-btn bg-blue-500 text-white px-4 py-1.5 rounded-lg text-xs font-bold shadow-sm">
-                ◀ Newer
-            </button>
-            <div class="text-center">
-                <div class="text-xs font-bold text-slate-700 dark:text-slate-200" id="pageInfoTop">Page 1 of 1</div>
-                <div class="text-[10px] text-slate-400 mt-0.5" id="pageRangeTop"></div>
-            </div>
-            <button id="nextPageBtnTop" onclick="loadArchivePage(currentArchivePage + 1)"
-                class="page-btn bg-slate-500 text-white px-4 py-1.5 rounded-lg text-xs font-bold shadow-sm">
-                Older ▶
-            </button>
-        </div>
-    </div>
-
-    <!-- Feed (Will be translated) -->
-    <div id="loadingIndicator" class="text-center py-8 hidden notranslate">
-        <div class="text-2xl animate-pulse">⏳</div>
-        <p class="text-xs text-slate-400 mt-2">Loading posts...</p>
-    </div>
-
-    <div id="feed" class="space-y-3"></div>
-
-    <div id="emptyState" class="text-center py-10 hidden notranslate">
-        <div class="text-4xl mb-2 opacity-50">🔍</div>
-        <h3 class="text-sm font-bold text-slate-600 dark:text-slate-400">No results found</h3>
-    </div>
-
-    <!-- Load More (within page) -->
-    <div class="text-center mt-4 space-y-2 notranslate">
-        <button id="loadMoreBtn" class="bg-blue-500 text-white px-8 py-2.5 rounded-xl text-sm font-bold shadow-md hidden" onclick="renderNextBatch()">
-            Load More ⬇️
-        </button>
-        <div id="progressInfo" class="text-[11px] text-slate-400 font-medium"></div>
-    </div>
-
-    <!-- Archive Page Navigation (bottom) -->
-    <div id="archiveNavBottom" class="telegram-card rounded-xl p-3 mt-4 shadow-sm border border-slate-200 dark:border-slate-700 hidden notranslate">
-        <div class="flex items-center justify-between gap-2">
-            <button id="prevPageBtnBottom" onclick="loadArchivePage(currentArchivePage - 1)"
-                class="page-btn bg-blue-500 text-white px-4 py-1.5 rounded-lg text-xs font-bold shadow-sm">
-                ◀ Newer
-            </button>
-            <div class="text-center">
-                <div class="text-xs font-bold text-slate-700 dark:text-slate-200" id="pageInfoBottom">Page 1 of 1</div>
-                <div class="text-[10px] text-slate-400 mt-0.5" id="pageRangeBottom"></div>
-            </div>
-            <button id="nextPageBtnBottom" onclick="loadArchivePage(currentArchivePage + 1)"
-                class="page-btn bg-slate-500 text-white px-4 py-1.5 rounded-lg text-xs font-bold shadow-sm">
-                Older ▶
-            </button>
-        </div>
-    </div>
-
+<div class="flex justify-center gap-2 mt-3">
+<button onclick="translatePage('ar')" class="bg-green-500 text-white px-3 py-1 rounded">عربي</button>
+<button onclick="translatePage('en')" class="bg-blue-500 text-white px-3 py-1 rounded">English</button>
+<button onclick="toggleTheme()" id="themeBtn" class="bg-gray-300 px-3 py-1 rounded">Dark</button>
 </div>
+</header>
 
-<!-- Toast -->
-<div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-4 py-2 rounded-full opacity-0 transition-opacity duration-300 pointer-events-none z-50 shadow-lg text-sm font-bold notranslate">
-    📋 Link Copied!
+<div id="feed" class="space-y-3"></div>
+
 </div>
 
 <script>
-    // ====== State ======
-    let allPosts          = [];
-    let filteredPosts     = [];
-    let currentBatchIndex = 0;
-    let currentArchivePage = 1;
-    let totalArchivePages  = 1;
-    let perPage            = 200;
-    let isHashtagsVisible  = false;
-    const BATCH_SIZE = 15;
+// ====== Demo Data ======
+let allPosts = [
+  {text:"New AI tools released today with huge impact",date:"2026-01-01"},
+  {text:"Telegram channel growth tips for 2026",date:"2026-02-10"},
+  {text:"Best marketing strategies for content creators",date:"2026-03-15"}
+]
 
-    const TYPE_CONFIG = {
-        text:       { icon: '📝', label: 'Text',       color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300' },
-        photo:      { icon: '🖼️', label: 'Photo',      color: 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300' },
-        video:      { icon: '🎬', label: 'Video',      color: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300' },
-        document:   { icon: '📎', label: 'File',       color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300' },
-        pdf:        { icon: '📄', label: 'PDF',        color: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300' },
-        voice:      { icon: '🎤', label: 'Voice',      color: 'bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300' },
-        poll:       { icon: '📊', label: 'Poll',       color: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' },
-        video_note: { icon: '⭕', label: 'Video Note', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300' },
-        sticker:    { icon: '🎭', label: 'Sticker',    color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300' },
-        location:   { icon: '📍', label: 'Location',   color: 'bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300' },
-        contact:    { icon: '👤', label: 'Contact',    color: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' },
-    };
+// ====== Render ======
+function render() {
+  const feed = document.getElementById('feed')
+  feed.innerHTML = ''
 
-    // ====== Init ======
-    async function init() {
-        try {
-            const statsRes = await fetch('stats.json').catch(() => null);
-            if (statsRes && statsRes.ok) {
-                const stats = await statsRes.json();
-                totalArchivePages = stats.total_pages || 1;
-                perPage           = stats.per_page    || 200;
-                const updateDate  = new Date(stats.last_update).toLocaleString('en-US');
-                document.getElementById('lastUpdate').textContent =
-                    `Updated: ${updateDate} | Archive: ${stats.total_posts} posts | ${totalArchivePages} pages`;
-            }
+  allPosts.forEach(p=>{
+    feed.innerHTML += `
+    <div class="telegram-card p-4 rounded shadow">
+      <div class="text-sm">${p.text}</div>
+      <div class="text-xs text-gray-400 mt-2">${p.date}</div>
+    </div>`
+  })
+}
 
-            await loadArchivePage(1);
-            setupLongPressEvents();
-        } catch (err) {
-            document.getElementById('feed').innerHTML = `
-                <div class="text-center py-10">
-                    <div class="text-4xl mb-2">⚠️</div>
-                    <h3 class="text-sm font-bold text-red-500">Error loading data</h3>
-                    <p class="text-xs text-slate-400 mt-1">${err.message}</p>
-                </div>`;
-        }
-    }
+render()
 
-    // ====== Archive Page Loader ======
-    async function loadArchivePage(page) {
-        if (page < 1 || page > totalArchivePages) return;
+// ====== Translation Engine ======
+let currentLang = "en"
 
-        showLoading(true);
-        try {
-            const res = await fetch(`data_page_${page}.json`);
-            if (!res.ok) throw new Error(`data_page_${page}.json not found`);
-            allPosts           = await res.json();
-            currentArchivePage = page;
+async function translatePage(lang){
+  currentLang = lang
 
-            if (page === 1) {
-                await buildChannelFilter();
-                buildHashtagsCloud();
-            }
+  if(lang === "en"){
+    render()
+    return
+  }
 
-            updateArchiveNav();
-            applyFilters();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        } catch (err) {
-            document.getElementById('feed').innerHTML = `
-                <div class="text-center py-6">
-                    <p class="text-sm text-red-500 font-bold">⚠️ ${err.message}</p>
-                </div>`;
-        } finally {
-            showLoading(false);
-        }
-    }
+  const walker = document.createTreeWalker(
+    document.getElementById('feed'),
+    NodeFilter.SHOW_TEXT,
+    null,
+    false
+  )
 
-    async function buildChannelFilter() {
-        const select = document.getElementById('channelFilter');
-        while (select.options.length > 1) select.remove(1);
+  let node
 
-        const channels = [...new Set(allPosts.map(p => p.channel))].sort();
-        channels.forEach(ch => {
-            const count = allPosts.filter(p => p.channel === ch).length;
-            select.add(new Option(`${ch} (${count})`, ch));
-        });
-    }
+  while(node = walker.nextNode()){
+    const text = node.nodeValue.trim()
+    if(!text || text.length < 2) continue
 
-    function updateArchiveNav() {
-        const show = totalArchivePages > 1;
-        ['archiveNavTop', 'archiveNavBottom'].forEach(id => {
-            document.getElementById(id).classList.toggle('hidden', !show);
-        });
-        if (!show) return;
+    try{
+      const res = await fetch(
+        "https://api.mymemory.translated.net/get?q=" +
+        encodeURIComponent(text) +
+        "&langpair=en|" + lang
+      )
 
-        const startPost = (currentArchivePage - 1) * perPage + 1;
-        const endPost   = Math.min(currentArchivePage * perPage, totalArchivePages * perPage);
-        const pageText  = `Page ${currentArchivePage} of ${totalArchivePages}`;
-        const rangeText = `Posts ${startPost}–${endPost}`;
+      const data = await res.json()
 
-        ['Top', 'Bottom'].forEach(suffix => {
-            document.getElementById(`pageInfo${suffix}`).textContent  = pageText;
-            document.getElementById(`pageRange${suffix}`).textContent = rangeText;
-            document.getElementById(`prevPageBtn${suffix}`).disabled  = currentArchivePage === 1;
-            document.getElementById(`nextPageBtn${suffix}`).disabled  = currentArchivePage === totalArchivePages;
-        });
-    }
+      if(data.responseData){
+        node.nodeValue = data.responseData.translatedText
+      }
+    }catch(e){}
+  }
+}
 
-    function showLoading(state) {
-        document.getElementById('loadingIndicator').classList.toggle('hidden', !state);
-        document.getElementById('feed').classList.toggle('hidden', state);
-    }
-
-    // ====== Hashtags ======
-    function buildHashtagsCloud() {
-        const tagCount = {};
-        allPosts.forEach(p => { (p.hashtags || []).forEach(t => { tagCount[t] = (tagCount[t] || 0) + 1; }); });
-        const sorted = Object.entries(tagCount).sort((a, b) => b[1] - a[1]).slice(0, 15);
-        if (sorted.length === 0) return;
-
-        document.getElementById('hashtagsCloud').classList.remove('hidden');
-        document.getElementById('hashtagsList').innerHTML = sorted.map(([tag, count]) =>
-            `<button onclick="searchByHashtag('${tag}')"
-                class="text-[10px] bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-md hover:bg-blue-50 transition-all font-medium border border-slate-200 dark:border-slate-700">
-                #${tag} <span class="opacity-60 ml-0.5">${count}</span>
-            </button>`
-        ).join('');
-    }
-
-    function toggleHashtags() {
-        isHashtagsVisible = !isHashtagsVisible;
-        document.getElementById('hashtagsListContainer').classList.toggle('hidden', !isHashtagsVisible);
-        document.getElementById('toggleHashtagsBtn').textContent = isHashtagsVisible ? '🙈 Hide' : '👁️ Show';
-    }
-
-    function searchByHashtag(tag) {
-        document.getElementById('searchInput').value = `#${tag}`;
-        applyFilters();
-    }
-
-    // ====== Filters ======
-    function applyFilters() {
-        const search  = document.getElementById('searchInput').value.toLowerCase().trim();
-        const channel = document.getElementById('channelFilter').value;
-        const type    = document.getElementById('typeFilter').value;
-        const sort    = document.getElementById('sortFilter').value;
-
-        document.getElementById('clearSearch').classList.toggle('hidden', !search);
-
-        filteredPosts = allPosts.filter(p => {
-            const text = (p.text || '').toLowerCase();
-            const ch   = (p.channel || '').toLowerCase();
-            if (search  && !text.includes(search) && !ch.includes(search)) return false;
-            if (channel !== 'all' && p.channel !== channel)                 return false;
-            if (type    !== 'all' && p.type    !== type)                    return false;
-            return true;
-        });
-
-        switch (sort) {
-            case 'oldest': filteredPosts.sort((a, b) => new Date(a.date) - new Date(b.date)); break;
-            case 'views':  filteredPosts.sort((a, b) => (b.views || 0) - (a.views || 0));    break;
-            default:       filteredPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
-        }
-
-        const tagsDiv = document.getElementById('filterTags');
-        tagsDiv.innerHTML = '';
-        if (search)            tagsDiv.innerHTML += `<span class="text-[10px] bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded">"${search}"</span>`;
-        if (channel !== 'all') tagsDiv.innerHTML += `<span class="text-[10px] bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded">${channel}</span>`;
-        document.getElementById('activeFilters').classList.toggle('hidden', !search && channel === 'all');
-
-        currentBatchIndex = 0;
-        document.getElementById('feed').innerHTML = '';
-        renderNextBatch();
-    }
-
-    // ====== Render ======
-    function linkify(text) {
-        return text.replace(
-            /(\b(https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim,
-            '<a href="$1" target="_blank" class="text-blue-500 hover:underline break-all notranslate telegram-link" data-url="$1">$1</a>'
-        );
-    }
-
-    function processText(rawText, searchTerm) {
-        if (!rawText) return { visible: '', hidden: '', isTruncated: false };
-        let visibleText = rawText, hiddenText = '', isTruncated = false;
-        if (rawText.length > 250) {
-            let bp = rawText.lastIndexOf(' ', 250);
-            if (bp === -1) bp = 250;
-            visibleText = rawText.slice(0, bp);
-            hiddenText  = rawText.slice(bp);
-            isTruncated = true;
-        }
-        const format = (str) => {
-            let f = escapeHtml(str);
-            if (searchTerm) f = f.replace(new RegExp(`(${escapeRegex(searchTerm)})`, 'gi'), '<span class="highlight">$1</span>');
-            return linkify(f).replace(/\n/g, '<br>');
-        };
-        return { visible: format(visibleText), hidden: format(hiddenText), isTruncated };
-    }
-
-    function toggleReadMore(btn) {
-        const hidden = btn.parentElement.querySelector('.content-hidden');
-        const collapsed = hidden.classList.contains('hidden');
-        hidden.classList.toggle('hidden', !collapsed);
-        btn.textContent = collapsed ? ' Show Less' : '... Read More';
-    }
-
-    function renderNextBatch() {
-        const container = document.getElementById('feed');
-        const batch     = filteredPosts.slice(currentBatchIndex, currentBatchIndex + BATCH_SIZE);
-
-        if (currentBatchIndex === 0 && batch.length === 0) {
-            document.getElementById('emptyState').classList.remove('hidden');
-            document.getElementById('loadMoreBtn').classList.add('hidden');
-            document.getElementById('progressInfo').textContent = '';
-            return;
-        }
-        document.getElementById('emptyState').classList.add('hidden');
-
-        const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
-
-        batch.forEach(post => {
-            const date      = new Date(post.date);
-            const typeInfo  = TYPE_CONFIG[post.type] || TYPE_CONFIG.text;
-            const textData  = processText(post.text, searchTerm);
-
-            let htmlContent = `<span class="content-visible">${textData.visible}</span>`;
-            if (textData.isTruncated) {
-                htmlContent += `<span class="content-hidden hidden">${textData.hidden}</span>
-                    <button onclick="toggleReadMore(this)" class="text-blue-500 font-bold text-xs ml-1 notranslate">... Read More</button>`;
-            }
-
-            const forwardBadge = post.is_forwarded
-                ? `<span class="text-[10px] text-slate-400 italic ml-1">↩ Fwd</span>` : '';
-
-            const card = document.createElement('div');
-            card.className = 'fade-in';
-            card.innerHTML = `
-                <div class="telegram-card rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-                    <div class="flex justify-between items-center px-4 pt-3 pb-2 notranslate">
-                        <div class="flex items-center gap-2">
-                            <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-sm">📢</div>
-                            <div class="flex flex-col">
-                                <span class="text-[13px] font-bold leading-tight">${escapeHtml(post.channel)}</span>
-                                <div class="flex items-center gap-1 mt-0.5">
-                                    <span class="type-badge ${typeInfo.color}">${typeInfo.icon} ${typeInfo.label}</span>
-                                    ${forwardBadge}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="text-[10px] text-slate-400 font-medium">${date.toLocaleDateString('en-US')}</div>
-                    </div>
-                    <div class="px-4 pt-1 pb-3">
-                        <div class="text-[14px] leading-relaxed text-slate-800 dark:text-slate-200">${htmlContent}</div>
-                    </div>
-                    <div class="flex justify-between items-center px-4 py-2 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 notranslate">
-                        <div class="flex gap-3">
-                            ${post.views     ? `<span>👁️ ${formatNum(post.views)}</span>`    : ''}
-                            ${post.forwards  ? `<span>↩ ${formatNum(post.forwards)}</span>`  : ''}
-                            ${post.reactions ? `<span>❤️ ${formatNum(post.reactions)}</span>` : ''}
-                        </div>
-                        <a href="${post.link}" target="_blank"
-                            class="text-blue-500 font-bold telegram-link" data-url="${post.link}">Open ↗</a>
-                    </div>
-                </div>`;
-            container.appendChild(card);
-        });
-
-        currentBatchIndex += BATCH_SIZE;
-        const remaining = filteredPosts.length - currentBatchIndex;
-        document.getElementById('loadMoreBtn').classList.toggle('hidden', remaining <= 0);
-        document.getElementById('progressInfo').textContent =
-            `Showing ${Math.min(currentBatchIndex, filteredPosts.length)} of ${filteredPosts.length}`;
-    }
-
-    // ====== Long Press to Copy ======
-    let pressTimer, isLongPress = false;
-
-    function showToast() {
-        const t = document.getElementById('toast');
-        t.classList.replace('opacity-0', 'opacity-100');
-        setTimeout(() => t.classList.replace('opacity-100', 'opacity-0'), 2000);
-    }
-
-    function setupLongPressEvents() {
-        const feed = document.getElementById('feed');
-        const start = (e) => {
-            const target = e.target.closest('.telegram-link');
-            if (!target) return;
-            isLongPress = false;
-            pressTimer  = setTimeout(() => {
-                isLongPress = true;
-                navigator.clipboard.writeText(target.dataset.url).then(showToast);
-            }, 500);
-        };
-        const cancel = () => clearTimeout(pressTimer);
-        feed.addEventListener('mousedown',  start);
-        feed.addEventListener('touchstart', start, { passive: true });
-        feed.addEventListener('mouseup',    cancel);
-        feed.addEventListener('mouseleave', cancel);
-        feed.addEventListener('touchend',   cancel);
-        feed.addEventListener('click', (e) => {
-            if (e.target.closest('.telegram-link') && isLongPress) e.preventDefault();
-        });
-    }
-
-    // ====== Helpers ======
-    function formatNum(n) {
-        if (!n) return '0';
-        if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
-        if (n >= 1000)    return (n / 1000).toFixed(1) + 'K';
-        return n.toString();
-    }
-    function escapeHtml(s) {
-        return s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : '';
-    }
-    function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-    function clearSearchInput() { document.getElementById('searchInput').value = ''; applyFilters(); }
-    function resetAllFilters() {
-        document.getElementById('searchInput').value    = '';
-        document.getElementById('channelFilter').value = 'all';
-        document.getElementById('typeFilter').value    = 'all';
-        applyFilters();
-    }
-
-    // ====== Translation ======
-    function translatePage(lang) {
-        const trySet = (attempts) => {
-            if (attempts <= 0) return;
-            const combo = document.querySelector('.goog-te-combo');
-            if (combo) {
-                // To revert to original (English), setting value to empty string works
-                combo.value = lang === 'en' ? '' : lang;
-                combo.dispatchEvent(new Event('change'));
-            } else {
-                setTimeout(() => trySet(attempts - 1), 400);
-            }
-        };
-        trySet(10);
-    }
-
-    // ====== Theme ======
-    function toggleTheme() {
-        document.documentElement.classList.toggle('dark');
-        const isDark = document.documentElement.classList.contains('dark');
-        localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        document.getElementById('themeBtn').textContent = isDark ? '☀️ Light' : '🌙 Dark';
-    }
-    if (localStorage.getItem('theme') === 'dark') {
-        document.documentElement.classList.add('dark');
-        document.getElementById('themeBtn').textContent = '☀️ Light';
-    }
-
-    // ====== Listeners ======
-    let debounceTimer;
-    document.getElementById('searchInput').addEventListener('input', () => {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(applyFilters, 300);
-    });
-    ['channelFilter', 'typeFilter', 'sortFilter'].forEach(id => {
-        document.getElementById(id).addEventListener('change', applyFilters);
-    });
-
-    init();
+// ====== Theme ======
+function toggleTheme(){
+  document.documentElement.classList.toggle('dark')
+  const dark = document.documentElement.classList.contains('dark')
+  document.getElementById('themeBtn').textContent = dark ? "Light" : "Dark"
+}
 </script>
+
 </body>
 </html>
